@@ -7,12 +7,12 @@ export default class Login extends Component {
     state = {
         email: "",
         password: "",
-        disabled: true,
         errors: {}
     };
 
     handleInputChange = (e) => {
         this.setState({[e.target.name] : e.target.value});
+
     }
 
     handleLogin = (e) => {
@@ -26,16 +26,20 @@ export default class Login extends Component {
         axios
             .post("/login", data)
             .then(response => {
-                console.log(response.response.data);
+                let data = response.response.data;
+                if(data.success){
+                    window.location.href = data.redirect;
+                }
             })
             .catch(error => {
                 this.setState({ errors: error.response.data.errors });
-                console.log(error.response.data.errors);
             });
     };
 
     render() {
-        const { email, password, errors } = this.state;
+        const { email, password, errors} = this.state;
+        const isEnabled = email.length > 1 && password.length > 1;
+
         return (
             <React.Fragment>
                 <h5 className="mb-4 text-muted">Ulogujte se sa svojim nalogom</h5>
@@ -87,15 +91,16 @@ export default class Login extends Component {
                     <button
                         className="btn btn-primary shadow-2 mb-4 float-right mt-3"
                         onClick={this.handleLogin}
+                        disabled={!isEnabled}
                     >
-                        <i className="fa fa-lock" aria-hidden="true"></i> Login
+                    <i className="fa fa-lock" aria-hidden="true"></i> Login
                     </button>
                 </form>
                 <p className="mb-2 text-muted float-left mt-4">
                     Zaboravljena šifra? <a href="/forgot/password"><b>Reset</b></a>
                 </p>
                 <p className="mb-0 text-muted float-left ">
-                    Nemaš nalog? <a href="signup.html"><b>Registruj se</b></a>
+                    Nemaš nalog? <a href="/register"><b>Registruj se</b></a>
                 </p>
             </React.Fragment>
         );

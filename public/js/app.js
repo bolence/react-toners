@@ -65903,7 +65903,6 @@ var Login = /*#__PURE__*/function (_Component) {
     _defineProperty(_assertThisInitialized(_this), "state", {
       email: "",
       password: "",
-      disabled: true,
       errors: {}
     });
 
@@ -65918,13 +65917,15 @@ var Login = /*#__PURE__*/function (_Component) {
         password: _this.state.password
       };
       axios__WEBPACK_IMPORTED_MODULE_2___default.a.post("/login", data).then(function (response) {
-        console.log(response.response.data);
+        var data = response.response.data;
+
+        if (data.success) {
+          window.location.href = data.redirect;
+        }
       })["catch"](function (error) {
         _this.setState({
           errors: error.response.data.errors
         });
-
-        console.log(error.response.data.errors);
       });
     });
 
@@ -65938,6 +65939,7 @@ var Login = /*#__PURE__*/function (_Component) {
           email = _this$state.email,
           password = _this$state.password,
           errors = _this$state.errors;
+      var isEnabled = email.length > 1 && password.length > 1;
       return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h5", {
         className: "mb-4 text-muted"
       }, "Ulogujte se sa svojim nalogom"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
@@ -65967,7 +65969,8 @@ var Login = /*#__PURE__*/function (_Component) {
         className: errors && errors.password ? "text-danger float-left mt-1" : ""
       }, errors.password)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
         className: "btn btn-primary shadow-2 mb-4 float-right mt-3",
-        onClick: this.handleLogin
+        onClick: this.handleLogin,
+        disabled: !isEnabled
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", {
         className: "fa fa-lock",
         "aria-hidden": "true"
@@ -65978,7 +65981,7 @@ var Login = /*#__PURE__*/function (_Component) {
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Reset"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", {
         className: "mb-0 text-muted float-left "
       }, "Nema\u0161 nalog? ", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
-        href: "signup.html"
+        href: "/register"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Registruj se"))));
     }
   }]);
@@ -66051,7 +66054,35 @@ var Register = /*#__PURE__*/function (_Component) {
 
     _this = _super.call.apply(_super, [this].concat(args));
 
-    _defineProperty(_assertThisInitialized(_this), "state", {});
+    _defineProperty(_assertThisInitialized(_this), "state", {
+      email: "",
+      password: "",
+      name: "",
+      password_confirm: "",
+      errors: {}
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "handleInputChange", function (e) {
+      _this.setState(_defineProperty({}, e.target.name, e.target.value));
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "handleRegister", function (e) {
+      e.preventDefault();
+      var data = {
+        email: _this.state.email,
+        password: _this.state.password,
+        name: _this.state.name,
+        password_confirm: _this.state.password_confirm
+      };
+      axios.post("/register", data).then(function (response) {
+        var data = response.response.data;
+        window.location.href = data.redirect;
+      })["catch"](function (error) {
+        _this.setState({
+          errors: error.response.data.errors
+        });
+      });
+    });
 
     return _this;
   }
@@ -66059,7 +66090,73 @@ var Register = /*#__PURE__*/function (_Component) {
   _createClass(Register, [{
     key: "render",
     value: function render() {
-      return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null);
+      var _this$state = this.state,
+          email = _this$state.email,
+          password = _this$state.password,
+          name = _this$state.name,
+          password_confirm = _this$state.password_confirm,
+          errors = _this$state.errors;
+      var isDisabled = email.length > 1 && password.length > 1 && name.length > 1 && password_confirm.length > 1;
+      return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h5", {
+        className: "mb-4 text-muted"
+      }, "Registrujte novi nalog"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "form-group"
+      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
+        autoFocus: true,
+        type: "email",
+        name: "email",
+        className: errors && errors.email ? "form-control is-invalid" : "form-control",
+        placeholder: "Email",
+        value: email,
+        onChange: this.handleInputChange,
+        required: true
+      }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
+        className: errors && errors.email ? "text-danger float-left mb-2" : ""
+      }, errors.email)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "form-group"
+      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
+        type: "text",
+        name: "name",
+        className: errors && errors.name ? "form-control is-invalid" : "form-control",
+        placeholder: "Ime i prezime",
+        value: name,
+        onChange: this.handleInputChange,
+        required: true
+      }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
+        className: errors && errors.name ? "text-danger float-left mb-2" : ""
+      }, errors.name)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "form-group"
+      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
+        type: "password",
+        name: "password",
+        className: errors && errors.password ? "form-control is-invalid" : "form-control",
+        placeholder: "\u0160ifra",
+        value: password,
+        onChange: this.handleInputChange,
+        required: true
+      }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
+        className: errors && errors.password ? "text-danger float-left mt-1" : ""
+      }, errors.password)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "form-group"
+      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
+        type: "password",
+        name: "password_confirm",
+        className: "form-control",
+        placeholder: "Ponovi \u0161ifru",
+        value: password_confirm,
+        onChange: this.handleInputChange
+      })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
+        className: "btn btn-primary shadow-2 mb-4 float-right mt-3",
+        onClick: this.handleRegister,
+        disabled: !isDisabled
+      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", {
+        className: "fa fa-lock",
+        "aria-hidden": "true"
+      }), " Registruj se")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", {
+        className: "mb-0 text-muted float-left mt-4"
+      }, "Ima\u0161 nalog?", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
+        href: "/login"
+      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, " Uloguj se"))));
     }
   }]);
 
