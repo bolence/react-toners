@@ -1,27 +1,43 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
+import axios from "axios";
 
 export default class Register extends Component {
     state = {
         email: "",
         password: "",
         name: "",
-        password_confirm: "",
-        errors: {}
+        password_confirmation: "",
+        errors: {},
+        error: "",
+        account: "",
+        accounts: []
     };
 
-    handleInputChange = (e) => {
+    handleInputChange = e => {
         this.setState({ [e.target.name]: e.target.value });
     };
 
-    handleRegister = (e) => {
+    componentDidMount() {
+        axios
+            .get("/api/accounts")
+            .then(response => {
+                this.setState({ accounts: response.data });
+            })
+            .catch(error => {
+                this.setState({ error: error.data.error });
+            });
+    }
+
+    handleRegister = e => {
         e.preventDefault();
 
         const data = {
             email: this.state.email,
             password: this.state.password,
             name: this.state.name,
-            password_confirm: this.state.password_confirm
+            password_confirmation: this.state.password_confirmation,
+            account: this.state.account
         };
 
         axios
@@ -35,9 +51,21 @@ export default class Register extends Component {
             });
     };
     render() {
-
-        const { email, password, name, password_confirm, errors } = this.state;
-        const isDisabled = email.length > 1 && password.length > 1 && name.length > 1 && password_confirm.length > 1
+        const {
+            email,
+            password,
+            name,
+            password_confirmation,
+            errors,
+            account,
+            accounts
+        } = this.state;
+        const isDisabled =
+            email.length > 1 &&
+            password.length > 1 &&
+            name.length > 1 &&
+            account &&
+            password_confirmation.length > 1;
 
         return (
             <React.Fragment>
@@ -124,13 +152,32 @@ export default class Register extends Component {
                     <div className="form-group">
                         <input
                             type="password"
-                            name="password_confirm"
+                            name="password_confirmation"
                             className="form-control"
                             placeholder="Ponovi šifru"
-                            value={password_confirm}
+                            value={password_confirmation}
                             onChange={this.handleInputChange}
-
                         />
+                    </div>
+
+                    <div className="form-group">
+                        <select
+                            name="account"
+                            value={account}
+                            type="text"
+                            className="form-control"
+                            onChange={this.handleInputChange}
+                        >
+                            <option value="">Izaberi službu:</option>
+                            {accounts.map(a => (
+                                <option key={a.id} value={a.id}>
+                                    {a.sluzba}
+                                </option>
+                            ))}
+                        </select>
+                        <span className={errors && errors.account ? 'text-danger float-left mt-1' : ""}>
+                            { errors.account }
+                        </span>
                     </div>
 
                     <button
@@ -138,7 +185,8 @@ export default class Register extends Component {
                         onClick={this.handleRegister}
                         disabled={!isDisabled}
                     >
-                        <i className="fa fa-lock" aria-hidden="true"></i> Registruj se
+                        <i className="fa fa-lock" aria-hidden="true"></i>{" "}
+                        Registruj se
                     </button>
                 </form>
                 <p className="mb-0 text-muted float-left mt-4">

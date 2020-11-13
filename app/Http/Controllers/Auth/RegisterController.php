@@ -55,6 +55,14 @@ class RegisterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            "account" => ['required', 'string'],
+        ],
+        [
+          'account.required' => 'Služba je obavezno polje',
+          'name.required' => 'Ime i prezime je obavezno polje',
+          'password.required' => 'Šifra je obavezno polje',
+          'password.min' => 'Šifra mora biti min. 8 karaktera',
+          'password.confirmed' => 'Morate potvrditi šifru',
         ]);
     }
 
@@ -70,6 +78,8 @@ class RegisterController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'account_id' => $data['account'],
+            'api_token' => Str::random(60),
         ]);
 
         Auth::login($user);

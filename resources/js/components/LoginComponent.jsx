@@ -26,13 +26,14 @@ export default class Login extends Component {
         axios
             .post("/login", data)
             .then(response => {
-                let data = response.response.data;
-                if(data.success){
-                    window.location.href = data.redirect;
-                }
+                let user = JSON.stringify(response.data.user);
+                let token = response.data.token;
+                localStorage.setItem('toneri.token', token);
+                localStorage.setItem('toneri.user', user);
+                window.location.href = '/home';
             })
             .catch(error => {
-                this.setState({ errors: error.response.data.errors });
+                this.setState({ errors: error.data.errors });
             });
     };
 

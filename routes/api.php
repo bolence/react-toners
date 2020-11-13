@@ -17,3 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('accounts', [App\Http\Controllers\Api\ApiAccountController::class, 'index']);
+
+Route::middleware('auth:api')->get('orders', [App\Http\Controllers\Api\ApiOrdersController::class, 'index']);
