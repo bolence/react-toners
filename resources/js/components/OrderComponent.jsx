@@ -5,6 +5,9 @@ import NumberFormat from "react-number-format";
 import Moment from "react-moment";
 import Pagination from "./commons/Pagination";
 import { paginate } from "./functions/paginate";
+import helpers from './commons/Helpers';
+import { ToastContainer } from "react-toastify";
+
 
 export default class Order extends Component {
     state = {
@@ -14,10 +17,14 @@ export default class Order extends Component {
         month: "",
         defaultPerPage: 10,
         currentPage: 1,
-        perPage: [10, 20, 50, 100, 500, 1000, 5000]
+        searchKeyword: "",
+        perPage: [10, 20, 50, 100, 500, 1000, 5000],
+        user: helpers.getUser(),
+        orders_sum: 0,
     };
 
     componentDidMount() {
+
         axios
             .get("/api/orders")
             .then(response => {
@@ -27,7 +34,9 @@ export default class Order extends Component {
                     title: response.data.title
                 });
             })
-            .catch(error => {});
+            .catch(error => {
+                helpers.notify(error.data.message, true);
+            });
     }
 
     onChange = () => {
@@ -38,20 +47,48 @@ export default class Order extends Component {
         this.setState({ currentPage: page });
     };
 
+
     handlePageSizeChange = e => {
         this.setState({ defaultPerPage: e.target.value, currentPage: 1 });
     };
 
     handleMonthChange = e => {
         this.setState({ month: e.target.value });
-        let searchMonth = e.target.value ? '?month=' + e.target.value : "";
+        let searchMonth = e.target.value ? "?month=" + e.target.value : "";
         axios.get("/api/orders" + searchMonth).then(response => {
             this.setState({
                 orders: response.data.orders,
                 orders_count: response.data.orders_count,
+                orders_sum: response.data.orders_sum,
+                title: response.data.title,
                 currentPage: 1
             });
         });
+    };
+
+    handleSearch = e => {
+        let searchKeyword = e.target.value;
+        let orders = [...this.state.orders];
+        orders = orders.filter(order => {
+            let catridge = order.printer.catridge.toLowerCase();
+            return catridge.indexOf(searchKeyword.toLowerCase()) !== -1;
+        });
+
+        this.setState({
+            orders,
+            searchKeyword,
+            orders_count: orders.length
+        });
+    };
+
+    deleteCatridgeFromOrder = order => {
+        helpers.notify('Uspešno izbrisano', null);
+        const orders = [...this.state.orders];
+        const deleted = orders.filter(o => o.id !== order.id);
+        this.setState({
+            orders: deleted
+        });
+
     };
 
     render() {
@@ -62,20 +99,27 @@ export default class Order extends Component {
             month,
             perPage,
             defaultPerPage,
-            currentPage
+            currentPage,
+            searchKeyword,
+            user,
+            orders_sum,
         } = this.state;
 
         const { length: count } = this.state.orders;
 
         const data = paginate(orders, currentPage, defaultPerPage);
 
+
         return (
             <div className="row">
+                <ToastContainer />
                 <div className="col-md-12 col-lg-12">
                     <div className="card">
                         <div className="card-header">
                             <b>
-                                {title} - {orders_count} tonera
+                                {title} - {orders_count} tonera{" "}
+                                {month ? "- " + month + ".mesec" : ""}
+                                {/* {orders_sum} */}
                             </b>
                         </div>
                         <div className="card-body">
@@ -107,24 +151,50 @@ export default class Order extends Component {
                                             >
                                                 <option>Izaberi mesec</option>
                                                 <option value="">Sve</option>
-                                                <option value="1">1.mesec</option>
-                                                <option value="2">2.mesec</option>
-                                                <option value="3">3.mesec</option>
-                                                <option value="4">4.mesec</option>
-                                                <option value="5">5.mesec</option>
-                                                <option value="6">6.mesec</option>
-                                                <option value="7">7.mesec</option>
-                                                <option value="8">8.mesec</option>
-                                                <option value="9">9.mesec</option>
-                                                <option value="10">10.mesec</option>
-                                                <option value="11">11.mesec</option>
-                                                <option value="12">12.mesec</option>
+                                                <option value="1">
+                                                    1.mesec
+                                                </option>
+                                                <option value="2">
+                                                    2.mesec
+                                                </option>
+                                                <option value="3">
+                                                    3.mesec
+                                                </option>
+                                                <option value="4">
+                                                    4.mesec
+                                                </option>
+                                                <option value="5">
+                                                    5.mesec
+                                                </option>
+                                                <option value="6">
+                                                    6.mesec
+                                                </option>
+                                                <option value="7">
+                                                    7.mesec
+                                                </option>
+                                                <option value="8">
+                                                    8.mesec
+                                                </option>
+                                                <option value="9">
+                                                    9.mesec
+                                                </option>
+                                                <option value="10">
+                                                    10.mesec
+                                                </option>
+                                                <option value="11">
+                                                    11.mesec
+                                                </option>
+                                                <option value="12">
+                                                    12.mesec
+                                                </option>
                                             </select>
                                         </div>
                                         <div className="col-6">
                                             <input
                                                 className="form-control"
-                                                name="search"
+                                                type="search"
+                                                value={searchKeyword}
+                                                onChange={this.handleSearch}
                                                 placeholder="Pretraga"
                                             />
                                         </div>
@@ -142,6 +212,7 @@ export default class Order extends Component {
                                             <th>Cena</th>
                                             <th>Ukupno</th>
                                             <th>Snimljeno</th>
+                                            <th></th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -176,6 +247,18 @@ export default class Order extends Component {
                                                     <Moment format="DD/MM/YYYY">
                                                         {order.created_at}
                                                     </Moment>
+                                                </td>
+
+                                                <td className={order.account_id !== user.account_id ? 'd-none' : ''}>
+                                                    <a
+                                                        onClick={() =>
+                                                            this.deleteCatridgeFromOrder(
+                                                                order
+                                                            )
+                                                        }
+                                                    >
+                                                        <i className="fa fa-trash text-danger"></i>
+                                                    </a>
                                                 </td>
                                             </tr>
                                         ))}

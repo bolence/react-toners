@@ -16,11 +16,25 @@ class Account extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class, 'account_id');
+        return $this->belongsTo(User::class);
     }
 
     public function orders()
     {
         return $this->hasMany(Order::class);
     }
+
+    public function sum_orders_per_month()
+    {
+        return $this->orders()
+                ->where('month', '=', date('m'))
+                ->whereYear('created_at', '=', date('Y'))
+                ->sum(\DB::raw('price * quantity'));
+    }
+
+    public function bonus()
+    {
+        return $this->hasMany(Bonus::class)->where('bonus_month', '=', date('m'));
+    }
+
 }

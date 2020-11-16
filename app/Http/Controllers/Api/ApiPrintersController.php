@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\User;
+use App\Models\Printer;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-class ApiUserController extends Controller
+class ApiPrintersController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -15,8 +15,8 @@ class ApiUserController extends Controller
      */
     public function index()
     {
-        $users = User::with('account.bonus')->get();
-        return response()->json($users);
+
+        return response()->json(['printers' => Printer::all()]);
     }
 
     /**
@@ -37,7 +37,7 @@ class ApiUserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
     }
 
     /**
@@ -48,7 +48,8 @@ class ApiUserController extends Controller
      */
     public function show($id)
     {
-        //
+        $printer = Printer::find($id);
+        return response()->json($printer);
     }
 
     /**

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
+use Exception;
 use App\Models\User;
+use App\Models\Bonus;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-class ApiUserController extends Controller
+class ApiBonusController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -15,8 +17,7 @@ class ApiUserController extends Controller
      */
     public function index()
     {
-        $users = User::with('account.bonus')->get();
-        return response()->json($users);
+        //
     }
 
     /**
@@ -37,7 +38,29 @@ class ApiUserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+        $matchThese = [
+            'account_id' => $request->account_id,
+            'bonus_month' => date('m')
+        ];
+
+        $bonus = Bonus::updateOrCreate($matchThese, [
+            'bonus' => $request->bonus,
+            'account_id' => $request->account_id,
+            'bonus_month' => date('m')
+        ]);
+
+        if( $bonus )
+        {
+            return response()->json([
+                'message' => 'Novi bonus dodat/izmenjen. Novi bonus je sad ' . number_format($request->bonus, 2),
+                'users' => User::with('account.bonus')->get(),
+            ], 200);
+        }
+
+        return response()->json([
+            'message' => 'Novi bonus nije moguće dodati'
+        ],400);
     }
 
     /**
@@ -82,6 +105,31 @@ class ApiUserController extends Controller
      */
     public function destroy($id)
     {
-        //
+
+        $bonus = Bonus::find($id);
+
+        if(! $bonus )
+        {
+            return response()->json([
+                'message' => 'Ovaj bonus ne postoji ili je već izbrisan'
+            ], 400);
+        }
+
+        try
+        {
+            $bonus->delete();
+        }
+        catch (Exception $e)
+        {
+            return response()->json([
+                'message' => 'Došlo je do greške priliko brisanja',
+                'error_message' => $e->getMessage()
+            ], 400);
+        }
+
+        return response()->json([
+            'message' => 'Uspešno izbrisan bonus',
+            'users' => User::with('account.bonus')->get(),
+        ], 200);
     }
 }

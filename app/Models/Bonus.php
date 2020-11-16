@@ -5,9 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Order extends Model
+class Bonus extends Model
 {
     use HasFactory;
+
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'bonusi';
 
     /**
      * The attributes that aren't mass assignable.
@@ -23,26 +30,9 @@ class Order extends Model
      */
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
+
     public function account()
     {
         return $this->belongsTo(Account::class);
-    }
-
-    public function printer()
-    {
-        return $this->belongsTo(Printer::class);
-    }
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function orders_sum($month = null)
-    {
-        $month = (int) $month == null ? date('m') : $month;
-        return $this->where('account_id', '=', $this->account_id)
-                     ->where('month', '=', $month)
-                     ->sum(\DB::raw('price * quantity'));
     }
 }

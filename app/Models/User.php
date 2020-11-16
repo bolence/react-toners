@@ -56,6 +56,11 @@ class User extends Authenticatable
      */
     public function account()
     {
-        return $this->hasOne(Account::class, 'id');
+        return $this->hasOne(Account::class, 'id', 'account_id');
+    }
+
+    public function order()
+    {
+        return $this->hasMany(Order::class);
     }
 }

@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Traits\Financial;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
-class ApiUserController extends Controller
+class OrderController extends Controller
 {
+    use Financial;
     /**
      * Display a listing of the resource.
      *
@@ -15,8 +16,7 @@ class ApiUserController extends Controller
      */
     public function index()
     {
-        $users = User::with('account.bonus')->get();
-        return response()->json($users);
+        //
     }
 
     /**
@@ -26,7 +26,7 @@ class ApiUserController extends Controller
      */
     public function create()
     {
-        //
+        return view('order.create', ['title' => 'Kreiraj porudžbenicu']);
     }
 
     /**
