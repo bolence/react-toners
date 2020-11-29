@@ -46,7 +46,6 @@ class Users extends Component {
             bonus: this.state.bonus,
             account_id: this.state.account_id
         };
-        console.log(data);
         axios
             .post("/api/bonuses", data)
             .then(response => {
@@ -59,12 +58,15 @@ class Users extends Component {
     };
 
     deleteBonus = bonus => {
-        axios.delete('/api/bonuses/' + bonus).then(response => {
-            helpers.notify(response.data.message);
-            this.setState({ users: response.data.users});
-        }).catch( error => {
-            helpers.notify(error.data.message, true);
-        })
+        axios
+            .delete("/api/bonuses/" + bonus)
+            .then(response => {
+                helpers.notify(response.data.message);
+                this.setState({ users: response.data.users });
+            })
+            .catch(error => {
+                helpers.notify(error.data.message, true);
+            });
     };
 
     render() {
@@ -156,11 +158,21 @@ class Users extends Component {
                                     </a>
                                     &nbsp;
                                     <a
+                                        className={
+                                            JSON.stringify(
+                                                user.account.bonus[0]
+                                            ) ?? "d-none"
+                                        }
                                         onClick={() =>
                                             this.deleteBonus(
-                                                JSON.stringify(user.account.bonus[0]) ? JSON.parse(
-                                                    user.account.bonus[0].id
-                                                ) : null
+                                                JSON.stringify(
+                                                    user.account.bonus[0]
+                                                )
+                                                    ? JSON.parse(
+                                                          user.account.bonus[0]
+                                                              .id
+                                                      )
+                                                    : null
                                             )
                                         }
                                     >

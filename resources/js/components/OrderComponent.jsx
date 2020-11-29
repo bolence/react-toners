@@ -6,6 +6,7 @@ import Moment from "react-moment";
 import Pagination from "./commons/Pagination";
 import { paginate } from "./functions/paginate";
 import helpers from './commons/Helpers';
+import moment from 'moment';
 import { ToastContainer } from "react-toastify";
 
 
@@ -14,19 +15,21 @@ export default class Order extends Component {
         orders: [],
         orders_count: 0,
         title: "",
-        month: "",
+        month: moment().month() + 1,
         defaultPerPage: 10,
         currentPage: 1,
         searchKeyword: "",
         perPage: [10, 20, 50, 100, 500, 1000, 5000],
         user: helpers.getUser(),
         orders_sum: 0,
+        filteredData: [],
+
     };
 
     componentDidMount() {
 
         axios
-            .get("/api/orders")
+            .get("/api/orders?month=" + this.state.month)
             .then(response => {
                 this.setState({
                     orders: response.data.orders,
@@ -53,8 +56,9 @@ export default class Order extends Component {
     };
 
     handleMonthChange = e => {
-        this.setState({ month: e.target.value });
-        let searchMonth = e.target.value ? "?month=" + e.target.value : "";
+        let month = e.target.value;
+        this.setState({ month });
+        let searchMonth = month ? "?month=" + month : "";
         axios.get("/api/orders" + searchMonth).then(response => {
             this.setState({
                 orders: response.data.orders,
@@ -67,26 +71,33 @@ export default class Order extends Component {
     };
 
     handleSearch = e => {
-        let searchKeyword = e.target.value;
-        let orders = [...this.state.orders];
-        orders = orders.filter(order => {
+
+        let search = e.target.value;
+        let filteredData = [];
+        const { orders } = this.state;
+
+        filteredData = orders.filter(order => {
             let catridge = order.printer.catridge.toLowerCase();
-            return catridge.indexOf(searchKeyword.toLowerCase()) !== -1;
+            let printer = order.printer.name.toLowerCase();
+            return catridge.indexOf(search.toLowerCase()) !== -1 || printer.indexOf(search.toLowerCase()) !== -1 ;
         });
 
-        this.setState({
-            orders,
-            searchKeyword,
-            orders_count: orders.length
-        });
+        this.setState({ filteredData, searchKeyword: search, currentPage: 1, orders_count: filteredData.length });
     };
 
     deleteCatridgeFromOrder = order => {
-        helpers.notify('Uspešno izbrisano', null);
+
         const orders = [...this.state.orders];
         const deleted = orders.filter(o => o.id !== order.id);
-        this.setState({
-            orders: deleted
+
+        axios.delete('/api/orders/' + order.id).then( response => {
+            helpers.notify(response.data.message);
+            this.setState({
+                orders: deleted,
+                orders_count: response.data.summary.orders_count,
+            });
+        }).catch( error => {
+            helpers.notify(error.response.data.message, true);
         });
 
     };
@@ -103,23 +114,37 @@ export default class Order extends Component {
             searchKeyword,
             user,
             orders_sum,
+            filteredData,
+            defaultMonth,
         } = this.state;
 
-        const { length: count } = this.state.orders;
+        const { length: count } = this.state.filteredData.length > 0 ? filteredData : this.state.orders;
 
-        const data = paginate(orders, currentPage, defaultPerPage);
+        const data = paginate(
+            filteredData.length > 0 ? filteredData : orders,
+            currentPage,
+            defaultPerPage
+        );
 
+        const custom_title =  month == 'all' ? "Toneri za sve službe u " + moment().year() + '.godini' : title;
 
         return (
+
             <div className="row">
                 <ToastContainer />
-                <div className="col-md-12 col-lg-12">
+                <div className="col-12">
+                    <div className={orders_count === 0 ? 'alert alert-info' : 'd-none'}>
+                        Trenutno nemate porudžbenicu za ovaj mesec.
+                            <a href="/orders/create">Dodaj novu </a>
+                    </div>
+                </div>
+
+                <div className={ orders_count > 0 ? 'col-md-12 col-lg-12' : 'd-none' }>
                     <div className="card">
                         <div className="card-header">
                             <b>
-                                {title} - {orders_count} tonera{" "}
-                                {month ? "- " + month + ".mesec" : ""}
-                                {/* {orders_sum} */}
+                                {custom_title} - {orders_count} tonera
+
                             </b>
                         </div>
                         <div className="card-body">
@@ -150,43 +175,11 @@ export default class Order extends Component {
                                                 className="form-control"
                                             >
                                                 <option>Izaberi mesec</option>
-                                                <option value="">Sve</option>
-                                                <option value="1">
-                                                    1.mesec
-                                                </option>
-                                                <option value="2">
-                                                    2.mesec
-                                                </option>
-                                                <option value="3">
-                                                    3.mesec
-                                                </option>
-                                                <option value="4">
-                                                    4.mesec
-                                                </option>
-                                                <option value="5">
-                                                    5.mesec
-                                                </option>
-                                                <option value="6">
-                                                    6.mesec
-                                                </option>
-                                                <option value="7">
-                                                    7.mesec
-                                                </option>
-                                                <option value="8">
-                                                    8.mesec
-                                                </option>
-                                                <option value="9">
-                                                    9.mesec
-                                                </option>
-                                                <option value="10">
-                                                    10.mesec
-                                                </option>
-                                                <option value="11">
-                                                    11.mesec
-                                                </option>
-                                                <option value="12">
-                                                    12.mesec
-                                                </option>
+                                                <option value="all">Sve</option>
+
+                                                {_.range(1, 12 + 1).map(m => <option key={m} value={m} defaultValue={month}>
+                                                    {m}.mesec
+                                                </option>)}
                                             </select>
                                         </div>
                                         <div className="col-6">

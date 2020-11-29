@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Traits\Financial;
+use Illuminate\Support\Facades\DB;
 
 class ApiOrdersController extends Controller
 {
@@ -24,19 +25,23 @@ class ApiOrdersController extends Controller
         $user = Auth::user();
         $month = $request->month;
 
-        $orders = Order::when($month, function($q) use($month) {
-            $q->where('month', '=', $month);
-        })->with('account', 'printer')->where('account_id', '=', $user->account_id)
-        ->whereYear('created_at', '=', $year)
+
+        $orders = Order::with('account', 'printer')
+        ->when($month !== 'all', function($q) use($month, $user){
+            $q->where('account_id', '=', $user->account_id)
+                ->where('month', '=', $month);
+        })->whereYear('created_at', '=', $year)
         ->orderBy('id', 'desc')
         ->get();
+
+        // $title .= ;
 
         return response()->json([
             'orders' => $orders,
             'orders_count' => $orders->count(),
-            'title' => "Poručeni toneri " . $user->account->sluzba . " u $year.godini",
+            'title' => "Poručeni toneri " . $user->account->sluzba . "u $year.godini",
             'summary' => $this->get_summary_info()
-        ]);
+        ], 200);
     }
 
     public function store(Request $request)
@@ -54,7 +59,7 @@ class ApiOrdersController extends Controller
         $printer = Printer::find($request->printer);
         $order_sum = $request->quantity * $printer->price;
 
-        if( $this->check_limit($user->account, $order_sum ))
+        if( $this->get_summary() < $order_sum)
         {
             return response()->json([
                 'message' => 'Premašili ste limit za ovaj mesec'
@@ -127,7 +132,7 @@ class ApiOrdersController extends Controller
 
         $order = Order::find($id);
 
-        if( ! $order )
+        if( ! $order && !Auth::user()->isAdmin() )
         {
             return response()->json([
                 'message' => 'Ova porudžbenica ne postoji u bazi podataka!'
@@ -163,7 +168,24 @@ class ApiOrdersController extends Controller
             'bonus' => $this->get_bonus(),
             'orders_sum' => $this->get_orders_sum(),
             'limit' => $this->get_limit(),
+            'orders_count' => $this->get_orders_count(),
             'summary' => $this->get_summary()
         ];
+    }
+
+    public function statistics()
+    {
+
+        $statistics = DB::select("
+            SELECT o.id, a.sektor, a.sluzba, sum(quantity * price) as orders_sum, count(a.id) as orders_count, o.`month`, year(o.created_at) as year
+            FROM orders o
+            JOIN accounts a
+            ON a.id = o.account_id
+            GROUP BY o.`month`, year(o.created_at), a.id
+            ORDER BY year(o.created_at) desc, o.month desc"
+        );
+
+        return response()->json($statistics);
+
     }
 }

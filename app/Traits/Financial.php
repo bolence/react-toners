@@ -15,7 +15,12 @@ use Illuminate\Support\Facades\Auth;
 
     public function get_bonus()
     {
-        return Auth::user()->account->bonus ? (int) Auth::user()->account->bonus[0]->bonus : 0;
+    return Auth::user()->account->bonus ? (int) Auth::user()->account->bonus[0]->bonus : 0;
+    }
+
+    public function get_orders_count()
+    {
+        return Auth::user()->account->count_orders_per_month();
     }
 
     public function get_orders_sum()

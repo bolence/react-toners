@@ -32,6 +32,15 @@ class Account extends Model
                 ->sum(\DB::raw('price * quantity'));
     }
 
+    public function count_orders_per_month()
+    {
+
+        return $this->orders()
+                     ->where('month', '=', date('m'))
+                     ->whereYear('created_at', date('Y'))
+                     ->count();
+    }
+
     public function bonus()
     {
         return $this->hasMany(Bonus::class)->where('bonus_month', '=', date('m'));

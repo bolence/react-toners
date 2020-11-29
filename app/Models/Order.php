@@ -43,6 +43,9 @@ class Order extends Model
         $month = (int) $month == null ? date('m') : $month;
         return $this->where('account_id', '=', $this->account_id)
                      ->where('month', '=', $month)
+                     ->whereYear('created_at', date('Y'))
                      ->sum(\DB::raw('price * quantity'));
     }
+
+
 }

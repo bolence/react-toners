@@ -36,6 +36,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'admin' => 'boolean'
     ];
 
     /**
@@ -62,5 +63,10 @@ class User extends Authenticatable
     public function order()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function isAdmin()
+    {
+        return $this->admin;
     }
 }

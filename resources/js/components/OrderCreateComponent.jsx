@@ -119,7 +119,7 @@ export default class OrderCreate extends Component {
                 });
             })
             .catch(error => {
-                helpers.notify(error.data.message);
+                // helpers.notify(error.data.message, true);
             });
     };
 
@@ -158,7 +158,8 @@ export default class OrderCreate extends Component {
             bonus,
             limit,
             orders_sum,
-            summary
+            summary,
+            price
         } = this.state;
 
         return (
@@ -225,6 +226,7 @@ export default class OrderCreate extends Component {
                                         disabled={true}
                                         onChange={this.handleInputChange}
                                     />
+                                    <span className={printer ? 'text-info' : 'd-none'}>Cena ovog tonera je: {price} </span>
                                 </div>
 
                                 <div className="form-group">

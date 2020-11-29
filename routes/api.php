@@ -24,3 +24,4 @@ Route::middleware('auth:api')->get('users', [App\Http\Controllers\Api\ApiUserCon
 Route::middleware('auth:api')->resource('orders', App\Http\Controllers\Api\ApiOrdersController::class);
 Route::middleware('auth:api')->resource('printers', App\Http\Controllers\Api\ApiPrintersController::class);
 Route::middleware('auth:api')->resource('bonuses', App\Http\Controllers\Api\ApiBonusController::class);
+Route::middleware('auth:api')->get('statistics', [App\Http\Controllers\Api\ApiOrdersController::class, 'statistics']);
