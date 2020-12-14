@@ -5,10 +5,9 @@ import NumberFormat from "react-number-format";
 import Moment from "react-moment";
 import Pagination from "./commons/Pagination";
 import { paginate } from "./functions/paginate";
-import helpers from './commons/Helpers';
-import moment from 'moment';
+import helpers from "./commons/Helpers";
+import moment from "moment";
 import { ToastContainer } from "react-toastify";
-
 
 export default class Order extends Component {
     state = {
@@ -23,11 +22,10 @@ export default class Order extends Component {
         user: helpers.getUser(),
         orders_sum: 0,
         filteredData: [],
-
+        user: helpers.getUser()
     };
 
     componentDidMount() {
-
         axios
             .get("/api/orders?month=" + this.state.month)
             .then(response => {
@@ -50,7 +48,6 @@ export default class Order extends Component {
         this.setState({ currentPage: page });
     };
 
-
     handlePageSizeChange = e => {
         this.setState({ defaultPerPage: e.target.value, currentPage: 1 });
     };
@@ -71,7 +68,6 @@ export default class Order extends Component {
     };
 
     handleSearch = e => {
-
         let search = e.target.value;
         let filteredData = [];
         const { orders } = this.state;
@@ -79,27 +75,36 @@ export default class Order extends Component {
         filteredData = orders.filter(order => {
             let catridge = order.printer.catridge.toLowerCase();
             let printer = order.printer.name.toLowerCase();
-            return catridge.indexOf(search.toLowerCase()) !== -1 || printer.indexOf(search.toLowerCase()) !== -1 ;
+            return (
+                catridge.indexOf(search.toLowerCase()) !== -1 ||
+                printer.indexOf(search.toLowerCase()) !== -1
+            );
         });
 
-        this.setState({ filteredData, searchKeyword: search, currentPage: 1, orders_count: filteredData.length });
+        this.setState({
+            filteredData,
+            searchKeyword: search,
+            currentPage: 1,
+            orders_count: filteredData.length
+        });
     };
 
     deleteCatridgeFromOrder = order => {
-
         const orders = [...this.state.orders];
         const deleted = orders.filter(o => o.id !== order.id);
 
-        axios.delete('/api/orders/' + order.id).then( response => {
-            helpers.notify(response.data.message);
-            this.setState({
-                orders: deleted,
-                orders_count: response.data.summary.orders_count,
+        axios
+            .delete("/api/orders/" + order.id)
+            .then(response => {
+                helpers.notify(response.data.message);
+                this.setState({
+                    orders: deleted,
+                    orders_count: response.data.summary.orders_count
+                });
+            })
+            .catch(error => {
+                helpers.notify(error.response.data.message, true);
             });
-        }).catch( error => {
-            helpers.notify(error.response.data.message, true);
-        });
-
     };
 
     render() {
@@ -113,12 +118,13 @@ export default class Order extends Component {
             currentPage,
             searchKeyword,
             user,
-            orders_sum,
-            filteredData,
-            defaultMonth,
+            filteredData
         } = this.state;
 
-        const { length: count } = this.state.filteredData.length > 0 ? filteredData : this.state.orders;
+        const { length: count } =
+            this.state.filteredData.length > 0
+                ? filteredData
+                : this.state.orders;
 
         const data = paginate(
             filteredData.length > 0 ? filteredData : orders,
@@ -126,26 +132,26 @@ export default class Order extends Component {
             defaultPerPage
         );
 
-        const custom_title =  month == 'all' ? "Toneri za sve službe u " + moment().year() + '.godini' : title;
+        const custom_title =
+            month == "all"
+                ? "Toneri za sve službe u " + (moment().month() + 1) + '.' + moment().year() + ".godini"
+                : title;
 
         return (
-
             <div className="row">
                 <ToastContainer />
-                <div className="col-12">
-                    <div className={orders_count === 0 ? 'alert alert-info' : 'd-none'}>
-                        Trenutno nemate porudžbenicu za ovaj mesec.
-                            <a href="/orders/create">Dodaj novu </a>
-                    </div>
-                </div>
-
-                <div className={ orders_count > 0 ? 'col-md-12 col-lg-12' : 'd-none' }>
+                <div
+                    className="col-md-12 col-lg-12">
                     <div className="card">
                         <div className="card-header">
                             <b>
                                 {custom_title} - {orders_count} tonera
-
                             </b>
+                            <span className="float-right">
+                                <a href="/reports" className="btn btn-primary">
+                                    <i className="fa fa-print"></i> PDF izveštaj
+                                </a>
+                            </span>
                         </div>
                         <div className="card-body">
                             <div className="row mb-2">
@@ -175,11 +181,18 @@ export default class Order extends Component {
                                                 className="form-control"
                                             >
                                                 <option>Izaberi mesec</option>
-                                                <option value="all">Sve</option>
-
-                                                {_.range(1, 12 + 1).map(m => <option key={m} value={m} defaultValue={month}>
-                                                    {m}.mesec
-                                                </option>)}
+                                                <option value="all">
+                                                    Sve službe
+                                                </option>
+                                                {_.range(1, 12 + 1).map(m => (
+                                                    <option
+                                                        key={m}
+                                                        value={m}
+                                                        defaultValue={month}
+                                                    >
+                                                        {m}.mesec
+                                                    </option>
+                                                ))}
                                             </select>
                                         </div>
                                         <div className="col-6">
@@ -196,7 +209,14 @@ export default class Order extends Component {
                             </div>
 
                             <div>
-                                <table className="table table-bordered table-striped table-hover">
+                                <div className={data.length == 0 ? 'alert alert-primary alert-dismissible fade show mt-4' : 'd-none'} role="alert">
+                                    <button type="button" className="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                        <span className="sr-only">Close</span>
+                                    </button>
+                                    <strong>Nema porudžbenica za traženi mesec.</strong>
+                                </div>
+                                <table className={data.length > 0 ? 'table table-bordered table-striped table-hover' : 'd-none' }>
                                     <thead>
                                         <tr>
                                             <th>Služba</th>
@@ -205,10 +225,10 @@ export default class Order extends Component {
                                             <th>Cena</th>
                                             <th>Ukupno</th>
                                             <th>Snimljeno</th>
-                                            <th></th>
+                                            <th>Edit</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody >
                                         {data.map(order => (
                                             <tr key={order.id}>
                                                 <td scope="row">
@@ -242,7 +262,14 @@ export default class Order extends Component {
                                                     </Moment>
                                                 </td>
 
-                                                <td className={order.account_id !== user.account_id ? 'd-none' : ''}>
+                                                <td
+                                                    className={
+                                                        order.account_id !==
+                                                        user.account_id
+                                                            ? "d-none"
+                                                            : ""
+                                                    }
+                                                >
                                                     <a
                                                         onClick={() =>
                                                             this.deleteCatridgeFromOrder(

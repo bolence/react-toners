@@ -36,9 +36,4 @@ class HomeController extends Controller
     {
         return view('limits', ['title' => 'Limiti']);
     }
-
-    public function statistics()
-    {
-        return view('statistics', ['title' => 'Statistika']);
-    }
 }

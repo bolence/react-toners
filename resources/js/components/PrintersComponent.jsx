@@ -85,7 +85,10 @@ export default class Printers extends Component {
                 helpers.notify(response.data.message);
                 let printers = [...this.state.printers];
                 printers.unshift(response.data.printer);
-                this.setState({ printers, showNewPrinter: false });
+                this.setState({
+                    printers,
+                    showNewPrinter: !this.state.showNewPrinter
+                });
             })
             .catch(error => {
                 helpers.notify(error.response.data.message, true);
@@ -107,7 +110,7 @@ export default class Printers extends Component {
                 helpers.notify(response.data.message);
                 this.setState({
                     printers: response.data.printers,
-                    showHide: !this.state.showHide
+                    showUpdatePrinter: !this.state.showUpdatePrinter
                 });
             })
             .catch(error => {
@@ -279,7 +282,7 @@ export default class Printers extends Component {
                             variant="primary"
                             onClick={() => this.updatePrice()}
                         >
-                            Izmeni Štampač
+                            Izmeni štampač
                         </Button>
                     </Modal.Footer>
                 </Modal>
@@ -314,6 +317,7 @@ export default class Printers extends Component {
                                         <th>Toner</th>
                                         <th>Cena</th>
                                         <th>Kreiran</th>
+                                        <th>Izmenjen</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -331,6 +335,12 @@ export default class Printers extends Component {
                                                 {moment(
                                                     printer.created_at
                                                 ).format("DD/MM/YYYY")}
+                                            </td>
+
+                                            <td>
+                                                {moment(
+                                                    printer.updated_at
+                                                ).format("DD/MM/YYYY HH:mm:ss")}
                                             </td>
 
                                             <td>

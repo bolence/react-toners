@@ -47,5 +47,12 @@ class Order extends Model
                      ->sum(\DB::raw('price * quantity'));
     }
 
+    public static function get_count_of_orders()
+    {
+        return self::whereRaw('MONTH(created_at) = ' . date('m'))
+        ->whereRaw('YEAR(created_at) = ' . date('Y'))
+        ->count() > 0;
+    }
+
 
 }

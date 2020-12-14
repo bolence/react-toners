@@ -39,12 +39,19 @@ class ApiBonusController extends Controller
     public function store(Request $request)
     {
 
-        $matchThese = [
-            'account_id' => $request->account_id,
-            'bonus_month' => date('m')
-        ];
+        $exists = Bonus::where('account_id', '=', $request->account_id)
+                        ->where('bonus_month', '=', date('m'))
+                        ->whereRaw('YEAR(created_at) = ' . date('Y'))
+                        ->exists();
 
-        $bonus = Bonus::updateOrCreate($matchThese, [
+        if($exists)
+        {
+            return response()->json([
+                'message' => 'Za ovaj mesec ste već dodali bonus.Pokušajte sledeći.'
+            ], 400);
+        }
+
+        $bonus = Bonus::create([
             'bonus' => $request->bonus,
             'account_id' => $request->account_id,
             'bonus_month' => date('m')
@@ -59,7 +66,7 @@ class ApiBonusController extends Controller
         }
 
         return response()->json([
-            'message' => 'Novi bonus nije moguće dodati'
+            'message' => 'Došlo je do greške prilikom dodavanja bonusa'
         ],400);
     }
 
@@ -122,7 +129,7 @@ class ApiBonusController extends Controller
         catch (Exception $e)
         {
             return response()->json([
-                'message' => 'Došlo je do greške priliko brisanja',
+                'message' => 'Došlo je do greške prilikom brisanja',
                 'error_message' => $e->getMessage()
             ], 400);
         }

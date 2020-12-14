@@ -55,6 +55,7 @@ export default class OrderCreate extends Component {
                 });
             })
             .catch(error => {
+                this.setState({ errors: error.response.data.errors });
                 helpers.notify(error.response.data.message, true);
             });
     };
@@ -67,19 +68,23 @@ export default class OrderCreate extends Component {
 
     onSelectChange = (value, action) => {
         let id = value.value;
-
         axios.get("/api/printers/" + id).then(response => {
             this.setState({
                 catrigde: response.data.catridge,
                 printer: value,
-                price: response.data.price
+                price: response.data.price,
+                errors: ""
             });
         });
     };
 
     handleQuantityChange = e => {
         let quantity = e.target.value;
-        this.setState({ amount: this.state.price * quantity, quantity });
+        this.setState({
+            amount: this.state.price * quantity,
+            quantity,
+            errors: ""
+        });
     };
 
     componentDidMount() {
@@ -119,7 +124,7 @@ export default class OrderCreate extends Component {
                 });
             })
             .catch(error => {
-                // helpers.notify(error.data.message, true);
+                helpers.notify(error.response.data.message, true);
             });
     };
 
@@ -180,8 +185,8 @@ export default class OrderCreate extends Component {
                         </button>
                         <strong>
                             Trenutni limit: {helpers.formatNumber(limit)}.
-                            Bonus: {helpers.formatNumber(bonus)}.
-                            Preostalo za ovaj mesec: {helpers.formatNumber(summary)}
+                            Bonus: {helpers.formatNumber(bonus)}. Preostalo za
+                            ovaj mesec: {helpers.formatNumber(summary)}
                         </strong>
                     </div>
                 </div>
@@ -197,6 +202,15 @@ export default class OrderCreate extends Component {
                                 acceptCharset="utf-8"
                                 onSubmit={this.handleSubmit}
                             >
+                                <div className={errors.length ? 'alert alert-danger alert-dismissible fade show' : 'd-none'} role="alert">
+                                    <button type="button" className="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                        <span className="sr-only">Close</span>
+                                    </button>
+                                   {errors.lenght > 0 && errors.map(error => (
+                                       <p>{error}</p>
+                                   ))}
+                                </div>
                                 <div className="form-group">
                                     <label htmlFor="printer">Štampač</label>
                                     <Select
@@ -226,7 +240,13 @@ export default class OrderCreate extends Component {
                                         disabled={true}
                                         onChange={this.handleInputChange}
                                     />
-                                    <span className={printer ? 'text-info' : 'd-none'}>Cena ovog tonera je: {price} </span>
+                                    <span
+                                        className={
+                                            printer ? "text-info" : "d-none"
+                                        }
+                                    >
+                                        Cena ovog tonera je: {price}{" "}
+                                    </span>
                                 </div>
 
                                 <div className="form-group">
@@ -280,12 +300,14 @@ export default class OrderCreate extends Component {
                                         onChange={this.handleInputChange}
                                     ></textarea>
                                 </div>
+
                                 <div className="form-group float-right">
-                                    <input
+                                    <button
                                         type="submit"
                                         className="btn btn-primary"
-                                        value="Snimi"
-                                    />
+                                    >
+                                        Snimi porudžbenicu
+                                    </button>
                                 </div>
                             </form>
                         </div>
@@ -295,7 +317,8 @@ export default class OrderCreate extends Component {
                 <div className="col-6">
                     <div className="card">
                         <div className="card-header">
-                            Poručeno u ovom mesecu - {helpers.formatNumber(orders_sum) } ({orders.length})
+                            Poručeno u ovom mesecu -{" "}
+                            {helpers.formatNumber(orders_sum)} ({orders.length})
                         </div>
 
                         <div className="card-body">

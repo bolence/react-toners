@@ -34,7 +34,6 @@ class Account extends Model
 
     public function count_orders_per_month()
     {
-
         return $this->orders()
                      ->where('month', '=', date('m'))
                      ->whereYear('created_at', date('Y'))

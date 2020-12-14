@@ -53,7 +53,7 @@ class Users extends Component {
                 helpers.notify(response.data.message);
             })
             .catch(error => {
-                helpers.notify(error.data.message, true);
+                helpers.notify(error.response.data.message, true);
             });
     };
 

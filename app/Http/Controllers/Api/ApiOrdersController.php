@@ -7,11 +7,12 @@ use Exception;
 use App\Models\Order;
 use App\Models\Account;
 use App\Models\Printer;
+use App\Traits\Financial;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Traits\Financial;
-use Illuminate\Support\Facades\DB;
+use App\Http\Requests\CreateNewOrder;
 
 class ApiOrdersController extends Controller
 {
@@ -23,38 +24,30 @@ class ApiOrdersController extends Controller
 
         $year = date('Y');
         $user = Auth::user();
-        $month = $request->month;
-
+        $month = $request->month ? $request->month : date('m');
 
         $orders = Order::with('account', 'printer')
-        ->when($month !== 'all', function($q) use($month, $user){
-            $q->where('account_id', '=', $user->account_id)
-                ->where('month', '=', $month);
+        ->when($month !== 'all', function($q) use($user, $month){
+            $q->where('account_id', '=', $user->account_id)->whereRaw('MONTH(created_at) = ' . $month);
         })->whereYear('created_at', '=', $year)
+        ->when($month == 'all', function($q) {
+            $q->where('month', '=', date('m'));
+        })
         ->orderBy('id', 'desc')
         ->get();
 
-        // $title .= ;
 
         return response()->json([
             'orders' => $orders,
             'orders_count' => $orders->count(),
-            'title' => "Poručeni toneri " . $user->account->sluzba . "u $year.godini",
+            'title' => "Poručeni toneri " . $user->account->sluzba . " u $year.godini",
             'summary' => $this->get_summary_info()
         ], 200);
     }
 
-    public function store(Request $request)
+    public function store(CreateNewOrder $request)
     {
         $user = Auth::user();
-
-        $request->validate([
-            'printer' => 'required',
-            'quantity' => 'required|integer'
-        ],[
-            'printer.required' => 'Niste izabrali štampač',
-            'quantity.required' => 'Niste izabrali količinu'
-        ]);
 
         $printer = Printer::find($request->printer);
         $order_sum = $request->quantity * $printer->price;
@@ -62,25 +55,28 @@ class ApiOrdersController extends Controller
         if( $this->get_summary() < $order_sum)
         {
             return response()->json([
-                'message' => 'Premašili ste limit za ovaj mesec'
+                'message' => 'Premašili ste limit za ovaj mesec',
+                'errors' => [],
             ], 400);
         }
 
-        // $this->check_if_exist($user->account_id, $request->printer); fix later !!!
+        $this->check_if_exist($user->account_id, $request->printer);
 
-        $order = Order::create([
+        Order::create([
             'quantity'   => $request->quantity,
             'printer_id' => $request->printer,
             'price'      => $printer->price,
             'month'      => date('m'),
             'account_id' => $user->account_id,
+            'user_id' => $user->id,
             'napomena'   => isset($request->napomena) ?? $request->napomena
         ]);
 
         return response()->json([
             'message' => 'Uspešno snimljena porudžbenica',
             'order' => Order::with('printer')->latest()->first(),
-            'summary' => $this->get_summary_info()
+            'summary' => $this->get_summary_info(),
+            'errors' => []
         ], 200);
     }
 
@@ -111,6 +107,7 @@ class ApiOrdersController extends Controller
         $order = Order::where('account_id', '=', $account_id)
         ->where('printer_id', '=', $printer_id)
         ->where('month', '=', date('m'))
+        ->whereYear('created_at', '=', date('Y'))
         ->first();
 
         if($order)
