@@ -28,10 +28,11 @@ export default class OrderCreate extends Component {
     handleSubmit = e => {
         e.preventDefault();
 
-        const { quantity, printer } = this.state;
+        const { quantity, printer, napomena } = this.state;
 
         let data = {
             quantity,
+            napomena,
             printer: printer ? printer.value : ""
         };
         axios
@@ -372,9 +373,9 @@ export default class OrderCreate extends Component {
                                                 </Moment>
                                             </td>
                                             <td>
-                                                <a
+                                                <a style={{ cursor: "pointer" }}
                                                     onClick={() =>
-                                                        this.deleteCatridgeFromOrder(
+                                                        confirm('Da li želiš da izbrišeš ovaj toner?') && this.deleteCatridgeFromOrder(
                                                             order
                                                         )
                                                     }

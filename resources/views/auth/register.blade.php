@@ -4,10 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Login | React toneri</title>
+    <title>Registracija | React toneri</title>
     <link href="{{ asset('assets/vendor/bootstrap4/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/auth.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('assets/css/all.min.css') }}">
+    <link rel="icon" type="image/ico" href="{{ asset('images/favicon.ico') }}">
     <style>
         body {
             background-image: url("images/register.jpg");

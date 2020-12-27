@@ -43,8 +43,20 @@ export default class Register extends Component {
         axios
             .post("/register", data)
             .then(response => {
-                let data = response.response.data;
-                window.location.href = data.redirect;
+
+                let user = JSON.stringify(response.data.user);
+                let token = response.data.token;
+                localStorage.setItem('toneri.token', token);
+                localStorage.setItem('toneri.user', user);
+
+                if(
+                    localStorage.getItem('toneri.token') !== null
+                    && localStorage.getItem('toneri.user') !== null
+                )
+                {
+                    window.location.href = '/home';
+                }
+
             })
             .catch(error => {
                 this.setState({ errors: error.response.data.errors });
@@ -194,6 +206,10 @@ export default class Register extends Component {
                     <a href="/login">
                         <b> Uloguj se</b>
                     </a>
+                </p>
+
+                <p className="float-right font-weight-bold" style={{ position: "absolute", bottom: 0, right: 0, left: 0, marginBottom: -50, fontSize: 30, color: 'white' }}>
+                    Developed by: Boško Bošković
                 </p>
             </React.Fragment>
         );

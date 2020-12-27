@@ -42,7 +42,7 @@ tr {
           <th scope="col">Štampač</th>
           <th scope="col">Toner</th>
           <th scope="col">Količina</th>
-          <th scope="col">Cena</th>
+          <th scope="col">Jed.cena</th>
           <th scope="col">Kreirano</th>
           <th scope="col">Ukupno</th>
         </tr>

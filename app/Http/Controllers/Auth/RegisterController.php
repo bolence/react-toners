@@ -86,4 +86,19 @@ class RegisterController extends Controller
 
         $user->notify(new RegistrationConfirmation);
     }
+
+     /**
+     * The user has been registered.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  mixed  $user
+     * @return mixed
+     */
+    protected function registered(Request $request, $user)
+    {
+        return response()->json([
+            'user'  => $user,
+            'token' => $user->createToken('toneri')->accessToken
+        ], 200);
+    }
 }

@@ -361,9 +361,8 @@ export default class Printers extends Component {
                                                 &nbsp;
                                                 <a
                                                     onClick={() =>
-                                                        this.deletePrinter(
-                                                            printer
-                                                        )
+                                                        confirm('Da li želiš da izbrišeš ovaj toner?')
+                                                        && this.deletePrinter(printer)
                                                     }
                                                 >
                                                     <i

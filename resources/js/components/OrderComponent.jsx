@@ -147,11 +147,6 @@ export default class Order extends Component {
                             <b>
                                 {custom_title} - {orders_count} tonera
                             </b>
-                            <span className="float-right">
-                                <a href="/reports" className="btn btn-primary">
-                                    <i className="fa fa-print"></i> PDF izveštaj
-                                </a>
-                            </span>
                         </div>
                         <div className="card-body">
                             <div className="row mb-2">
@@ -224,6 +219,7 @@ export default class Order extends Component {
                                             <th>Količina</th>
                                             <th>Cena</th>
                                             <th>Ukupno</th>
+                                            <th>Napomena</th>
                                             <th>Snimljeno</th>
                                             <th>Edit</th>
                                         </tr>
@@ -257,6 +253,9 @@ export default class Order extends Component {
                                                     />
                                                 </td>
                                                 <td>
+                                                    { order.napomena }
+                                                </td>
+                                                <td>
                                                     <Moment format="DD/MM/YYYY">
                                                         {order.created_at}
                                                     </Moment>
@@ -270,11 +269,10 @@ export default class Order extends Component {
                                                             : ""
                                                     }
                                                 >
-                                                    <a
+                                                    <a style={{ cursor: 'pointer' }}
                                                         onClick={() =>
-                                                            this.deleteCatridgeFromOrder(
-                                                                order
-                                                            )
+                                                            confirm('Da li želiš da izbrišeš ovaj toner?')
+                                                            && this.deleteCatridgeFromOrder(order)
                                                         }
                                                     >
                                                         <i className="fa fa-trash text-danger"></i>

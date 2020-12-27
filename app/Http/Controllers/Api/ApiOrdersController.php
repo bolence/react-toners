@@ -69,7 +69,7 @@ class ApiOrdersController extends Controller
             'month'      => date('m'),
             'account_id' => $user->account_id,
             'user_id' => $user->id,
-            'napomena'   => isset($request->napomena) ?? $request->napomena
+            'napomena'   => isset($request->napomena) ? $request->napomena : null
         ]);
 
         return response()->json([

@@ -164,7 +164,7 @@ class Users extends Component {
                                             ) ?? "d-none"
                                         }
                                         onClick={() =>
-                                            this.deleteBonus(
+                                            confirm('Da li želiš da izbrišeš ovaj bonus?') && this.deleteBonus(
                                                 JSON.stringify(
                                                     user.account.bonus[0]
                                                 )

@@ -97,10 +97,13 @@ export default class Login extends Component {
                     </button>
                 </form>
                 <p className="mb-2 text-muted float-left mt-4">
-                    Zaboravljena šifra? <a href="/forgot/password"><b>Reset</b></a>
+                    Zaboravljena šifra? <a href="/password/reset"><b>Reset</b></a>
                 </p>
                 <p className="mb-0 text-muted float-left ">
                     Nemaš nalog? <a href="/register"><b>Registruj se</b></a>
+                </p>
+                <p className="float-right font-weight-bold" style={{ position: "absolute", bottom: 0, right: 0, left: 0, marginBottom: -50, fontSize: 30 }}>
+                    Developed by: Boško Bošković
                 </p>
             </React.Fragment>
         );
