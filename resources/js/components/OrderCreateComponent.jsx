@@ -26,6 +26,7 @@ export default class OrderCreate extends Component {
         summary: 0,
         previousMonthOrders: {},
         showPreviousMonthOrder: false,
+        lastMonthOrders: {},
     };
 
     handleSubmit = e => {
@@ -162,7 +163,7 @@ export default class OrderCreate extends Component {
             this.setState({
                 previousMonthOrders: response.data,
                 showPreviousMonthOrder: true,
-                orders: response.data.orders,
+                lastMonthOrders: response.data.orders,
             });
         }).catch( error => {
 
@@ -176,13 +177,21 @@ export default class OrderCreate extends Component {
     };
 
     copyOrderFromLastMonth = () => {
-        axios.get('/orders/copy_orders').then( response => {
+        axios.get('/api/orders/copy_orders').then( response => {
             let orders = [...this.state.orders];
-            order.push(response.data.orders);
+            orders.push(response.data.orders[0]);
+            helpers.notify(response.data.message);
             this.setState({
                 orders,
+                showPreviousMonthOrder: false,
+                bonus: response.data.summary.bonus,
+                limit: response.data.summary.limit,
+                orders_sum: response.data.summary.orders_sum,
+                summary: response.data.summary.summary,
+                copiedFromLastMonth: response.data.copied,
+
             });
-            helpers.notify(response.data.message);
+
         }).catch( error => {
             helpers.notify(error.response.data.message, true);
         });
@@ -203,7 +212,8 @@ export default class OrderCreate extends Component {
             orders_sum,
             summary,
             price,
-            showPreviousMonthOrder
+            showPreviousMonthOrder,
+            lastMonthOrders
         } = this.state;
 
         return (
@@ -218,8 +228,8 @@ export default class OrderCreate extends Component {
                         </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        {orders.length > 0 ?
-                        <table class="table table-striped">
+                        {lastMonthOrders.length > 0 ?
+                        <table className="table table-striped">
                             <thead>
                                 <tr>
                                     <th>Štampač</th>
@@ -229,7 +239,7 @@ export default class OrderCreate extends Component {
                                 </thead>
 
                                 <tbody>
-                                    { orders.map( order =>
+                                    { lastMonthOrders.map( order =>
                                     <tr key={order.id}>
                                         <td scope="row">{order.printer.name}</td>
                                         <td>{order.printer.catridge}</td>
@@ -238,7 +248,7 @@ export default class OrderCreate extends Component {
                                     )}
                                 </tbody>
                         </table> :
-                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <div className="alert alert-info alert-dismissible fade show" role="alert">
                           <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                           </button>
@@ -254,8 +264,8 @@ export default class OrderCreate extends Component {
                         </Button>
                         <Button
                             variant="primary"
-                            className={orders.length == 0 ? 'd-none' : '' }
-                            onClick={() => copyOrderFromLastMonth}
+                            className={lastMonthOrders.length == 0 ? 'd-none' : '' }
+                            onClick={() => this.copyOrderFromLastMonth()}
                         >
                             Kopiraj porudžbenicu
                         </Button>
@@ -396,7 +406,12 @@ export default class OrderCreate extends Component {
                                         disabled={true}
                                     />
                                     <span className={quantity ? 'text-info' : 'd-none'}>
-                                      Preostali limit će biti: { helpers.formatNumber(limit - amount) }
+                                        {
+                                        summary - amount > 0
+                                        ? 'Preostali limit će biti: ' + helpers.formatNumber(summary - amount)
+                                        : 'Nemate dovoljno sredstava za ovaj toner'
+                                        }
+
                                   </span>
                                 </div>
 
@@ -415,7 +430,8 @@ export default class OrderCreate extends Component {
                                 <div className="form-group float-right">
                                     <button
                                         type="submit"
-                                        className="btn btn-primary"
+                                        disabled={summary - amount < 0}
+                                        className='btn btn-primary'
                                     >
                                         Snimi porudžbenicu
                                     </button>
@@ -464,6 +480,13 @@ export default class OrderCreate extends Component {
                                         <tr key={order.id}>
                                             <td scope="row">
                                                 {order.printer.name}
+                                            <a title="Kopirano iz prošle porudžbenice" className={
+                                               ! order.copied
+                                                ? 'd-none'
+                                                : ''
+                                                }>
+                                            <i className="fa fa-question-circle float-right text-danger font-weight-bold" ></i>
+                                            </a>
                                             </td>
                                             <td>{order.printer.catridge}</td>
                                             <td>{order.quantity}</td>

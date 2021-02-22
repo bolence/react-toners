@@ -8,6 +8,9 @@ import { paginate } from "./functions/paginate";
 import helpers from "./commons/Helpers";
 import moment from "moment";
 import { ToastContainer } from "react-toastify";
+import Calendar from 'react-calendar';
+import { Button, Modal } from "react-bootstrap";
+import 'react-calendar/dist/Calendar.css';
 
 export default class Order extends Component {
     state = {
@@ -22,7 +25,10 @@ export default class Order extends Component {
         user: helpers.getUser(),
         orders_sum: 0,
         filteredData: [],
-        user: helpers.getUser()
+        user: helpers.getUser(),
+        showReminderCalendar: false,
+        reminderDate: new Date(),
+        reminder_date_message: "",
     };
 
     componentDidMount() {
@@ -107,6 +113,32 @@ export default class Order extends Component {
             });
     };
 
+    handleOpenCloseModal = () => {
+        this.setState({
+            showReminderCalendar: ! this.state.showReminderCalendar,
+        });
+    };
+
+    calendarChanged = () => {
+        this.setState({
+            reminderDate: this.reminderDate
+        });
+    }
+
+    saveOrderReminder = () => {
+        axios.post('/api/reminders').then( response => {
+            this.setState({
+                showReminderCalendar: false,
+                reminder_date_message: response.data.reminder_date_message
+            });
+        }).catch( error => {
+            this.setState({
+                showReminderCalendar: false
+            });
+            helpers.notify( error.response.data.message, true);
+        });
+    };
+
     render() {
         const {
             orders,
@@ -118,7 +150,10 @@ export default class Order extends Component {
             currentPage,
             searchKeyword,
             user,
-            filteredData
+            filteredData,
+            showReminderCalendar,
+            reminderDate,
+            reminder_date_message
         } = this.state;
 
         const { length: count } =
@@ -140,13 +175,56 @@ export default class Order extends Component {
         return (
             <div className="row">
                 <ToastContainer />
+
+                <Modal show={showReminderCalendar}>
+                    <Modal.Header
+                        closeButton
+                        onClick={() => this.handleOpenCloseModal()}
+                    >
+                        <Modal.Title>
+                            Podesite podsetnik za vašu porudžbenicu u ovom mesecu
+                        </Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Calendar
+                        onChange={this.calendarChanged}
+                        value={reminderDate}
+                        />
+
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button
+                            variant="secondary"
+                            onClick={() => this.handleOpenCloseModal()}
+                        >
+                            Zatvori
+                        </Button>
+                        <Button
+                            variant="primary"
+                            onClick={() => this.saveOrderReminder()}
+                        >
+                            Snimi podsetnik
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
                 <div
                     className="col-md-12 col-lg-12">
+                        <div class={reminder_date_message !== "" ? 'alert alert-success alert-dismissible fade show' : 'd-none'} role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <strong>{reminder_date_message}</strong>
+                        </div>
                     <div className="card">
                         <div className="card-header">
                             <b>
                                 {custom_title} - {orders_count} tonera
                             </b>
+                            <span className="float-right">
+                                <button className="btn btn-primary" onClick={this.handleOpenCloseModal}>
+                                    <i className="fa fa-calendar"></i> Dodaj podsetnik
+                                </button>
+                            </span>
                         </div>
                         <div className="card-body">
                             <div className="row mb-2">
