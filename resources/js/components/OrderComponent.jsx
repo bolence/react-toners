@@ -29,6 +29,7 @@ export default class Order extends Component {
         showReminderCalendar: false,
         reminderDate: new Date(),
         reminder_date_message: "",
+        automaticCopy: false,
     };
 
     componentDidMount() {
@@ -119,13 +120,26 @@ export default class Order extends Component {
         });
     };
 
-    calendarChanged = () => {
+    calendarChanged = e => {
         this.setState({
-            reminderDate: this.reminderDate
+            reminderDate: e.target.value
+        }, console.log(this.state.reminderDate));
+    }
+
+    handleChangeCheckbox = () => {
+        this.setState({
+            automaticCopy: !this.state.automaticCopy
         });
     }
 
     saveOrderReminder = () => {
+        let data = {
+            reminder_date: this.state.reminderDate,
+            automatic_copy: this.state.automaticCopy
+        }
+
+        console.log(data);
+        return;
         axios.post('/api/reminders').then( response => {
             this.setState({
                 showReminderCalendar: false,
@@ -153,7 +167,8 @@ export default class Order extends Component {
             filteredData,
             showReminderCalendar,
             reminderDate,
-            reminder_date_message
+            reminder_date_message,
+            automatic_copy
         } = this.state;
 
         const { length: count } =
@@ -191,6 +206,11 @@ export default class Order extends Component {
                         value={reminderDate}
                         />
 
+                        <span>
+                            <input type="checkbox" onChange={this.handleChangeCheckbox} value={automatic_copy}/>
+                            Automatsko kopiranje porudžbenice iz prošlog meseca izabranog datuma
+                        </span>
+
                     </Modal.Body>
                     <Modal.Footer>
                         <Button
@@ -209,8 +229,8 @@ export default class Order extends Component {
                 </Modal>
                 <div
                     className="col-md-12 col-lg-12">
-                        <div class={reminder_date_message !== "" ? 'alert alert-success alert-dismissible fade show' : 'd-none'} role="alert">
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <div className={reminder_date_message !== "" ? 'alert alert-success alert-dismissible fade show' : 'd-none'} role="alert">
+                        <button type="button" className="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                         <strong>{reminder_date_message}</strong>

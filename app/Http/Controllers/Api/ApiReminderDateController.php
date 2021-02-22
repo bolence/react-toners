@@ -29,6 +29,7 @@ class ApiReminderDateController extends Controller {
         $reminder = new ReminderDate;
         $reminder->account_id = Auth::user()->account_id;
         $reminder->user_id = Auth::id();
+        $reminder->reminder_date = request()->reminder_date->format('Y-m-d');
 
         try
         {
