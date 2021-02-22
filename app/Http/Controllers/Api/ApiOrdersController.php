@@ -185,4 +185,35 @@ class ApiOrdersController extends Controller
         return response()->json($statistics);
 
     }
+
+    public function copy_order_from_last_month()
+    {
+        $last_month_orders = Order::whereMonth('created_at', '=', date('m') - 1)
+                                    ->whereYear('created_at', '=', date('Y'))
+                                    ->get();
+
+        foreach($last_month_orders as $orders)
+        {
+            $order = new Order;
+            $order->quantity = $orders->quantity;
+            $order->price = $orders->price;
+            $order->account_id = $orders->account_id;
+            $order->month = date('m');
+            $order->printer_id = $orders->printer_id;
+            $order->user_id = Auth::id();
+            $saved = $order->save();
+        }
+
+        if( $saved )
+        {
+            return response()->json([
+                'message' => 'Uspešno ste kopirali porudžbenicu iz prošlog meseca',
+                'orders'  => Order::current_month_order(Auth::user()->account_id),
+            ], 200);
+        }
+
+        return response()->json([
+            'message' => 'Došlo je do greške prilikom kopiranja porudžbenice'
+        ], 400)
+    }
 }

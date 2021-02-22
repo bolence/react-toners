@@ -54,5 +54,13 @@ class Order extends Model
         ->count() > 0;
     }
 
+    public static function current_month_order($account_id)
+    {
+        return self::whereRaw('MONTH(created_at) = ' . date('m'))
+        ->whereRaw('YEAR(created_at) = ' . date('Y'))
+        ->where('account_id', '=', $account_id)
+        ->get();
+    }
+
 
 }

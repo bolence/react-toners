@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use Exception;
 use App\Models\Printer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 
 class ApiPrintersController extends Controller
@@ -17,7 +19,11 @@ class ApiPrintersController extends Controller
      */
     public function index()
     {
-        return response()->json(['printers' => Printer::orderBy('id', 'desc')->get()]);
+        return response()->json(
+            [
+                'printers' => Printer::orderBy('id', 'desc')->get()
+            ]
+        );
     }
 
 
@@ -52,11 +58,14 @@ class ApiPrintersController extends Controller
         }
         catch (Exception $e)
         {
+            Log::error('Error occured on line ' . $e->getLine() . ' in file ' . $e->getFile() . ' with message ' . $e->getMessage());
             return response()->json([
+                'error_console_message' => $e->getMessage(),
                 'message' => 'Došlo je do greške prilikom snimanja ' . $e->getMessage()
             ], 400);
         }
 
+        Log::info('New printer added by ' . Auth::user()->name);
         return response()->json([
             'message' => 'Uspešno snimljen štampač',
             'printer' => $printer
@@ -86,7 +95,11 @@ class ApiPrintersController extends Controller
     {
         $printer = Printer::find($id);
 
-        if( ! $printer && ! Auth::user()->isAdmin() ){
+        if(
+            ! $printer
+            && ! Auth::user()->isAdmin()
+        )
+        {
             return response()->json([
                 'message' => 'Ovaj štampač ne postoji ili nemate prava'
             ], 400);
@@ -121,10 +134,13 @@ class ApiPrintersController extends Controller
     {
         $printer = Printer::find($id);
 
-        if( ! $printer || ! Auth::user()->isAdmin() )
+        if(
+            ! $printer
+            || ! Auth::user()->isAdmin()
+        )
         {
             return response()->json([
-                'message' => 'Štampač nije pronađen ili nemate prava da izmenite'
+                'message' => 'Štampač nije pronađen ili nemate prava da izbrišete štampač'
             ], 400);
         }
 
@@ -132,12 +148,15 @@ class ApiPrintersController extends Controller
         {
             $printer->delete();
         }
-        catch (\Exception $e)
+        catch (Exception $e)
         {
             return response()->json([
+                'error_console_message' => $e->getMessage(),
                 'message' => 'Došlo je do greške prilikom brisanja ' . $e->getMessage()
             ], 400);
         }
+
+        Log::info('Successfully deleted printer by ' . Auth::user()->name);
 
         return response()->json([
             'message' => 'Uspešno izbrisan štampač'

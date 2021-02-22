@@ -6,6 +6,7 @@ import { ToastContainer } from "react-toastify";
 import helpers from "./commons/Helpers";
 import Moment from "react-moment";
 import NumberFormat from "react-number-format";
+import { Button, Modal } from "react-bootstrap";
 
 export default class OrderCreate extends Component {
     state = {
@@ -22,7 +23,9 @@ export default class OrderCreate extends Component {
         bonus: 0,
         orders_sum: 0,
         limit: 0,
-        summary: 0
+        summary: 0,
+        previousMonthOrders: {},
+        showPreviousMonthOrder: false,
     };
 
     handleSubmit = e => {
@@ -151,6 +154,40 @@ export default class OrderCreate extends Component {
             });
     };
 
+    repeatOrderFromPreviousMonth = (e) => {
+        e.preventDefault();
+        const date = new Date();
+        const previousMonth = date.getMonth();
+        axios.get('/api/orders?month=' + previousMonth).then( response => {
+            this.setState({
+                previousMonthOrders: response.data,
+                showPreviousMonthOrder: true,
+                orders: response.data.orders,
+            });
+        }).catch( error => {
+
+        });
+    };
+
+    handleOpenCloseModal = () => {
+        this.setState({
+            showPreviousMonthOrder: ! this.state.showPreviousMonthOrder,
+        });
+    };
+
+    copyOrderFromLastMonth = () => {
+        axios.get('/orders/copy_orders').then( response => {
+            let orders = [...this.state.orders];
+            order.push(response.data.orders);
+            this.setState({
+                orders,
+            });
+            helpers.notify(response.data.message);
+        }).catch( error => {
+            helpers.notify(error.response.data.message, true);
+        });
+    };
+
     render() {
         const {
             printer,
@@ -165,11 +202,65 @@ export default class OrderCreate extends Component {
             limit,
             orders_sum,
             summary,
-            price
+            price,
+            showPreviousMonthOrder
         } = this.state;
 
         return (
             <div className="row">
+                 <Modal show={showPreviousMonthOrder} size="lg">
+                    <Modal.Header
+                        closeButton
+                        onClick={() => this.handleOpenCloseModal()}
+                    >
+                        <Modal.Title>
+                            Porudžbenica iz prošlog meseca
+                        </Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        {orders.length > 0 ?
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Štampač</th>
+                                    <th>Ketridž</th>
+                                    <th>Količina</th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                    { orders.map( order =>
+                                    <tr key={order.id}>
+                                        <td scope="row">{order.printer.name}</td>
+                                        <td>{order.printer.catridge}</td>
+                                        <td>{order.quantity}</td>
+                                    </tr>
+                                    )}
+                                </tbody>
+                        </table> :
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                          <strong> Nemate porudžbine za prošli mesec.</strong>
+                        </div>}
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button
+                            variant="secondary"
+                            onClick={() => this.handleOpenCloseModal()}
+                        >
+                            Zatvori
+                        </Button>
+                        <Button
+                            variant="primary"
+                            className={orders.length == 0 ? 'd-none' : '' }
+                            onClick={() => copyOrderFromLastMonth}
+                        >
+                            Kopiraj porudžbenicu
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
                 <div className="col-12">
                     <div
                         className="alert alert-primary alert-dismissible fade show"
@@ -190,6 +281,21 @@ export default class OrderCreate extends Component {
                             ovaj mesec: {helpers.formatNumber(summary)}
                         </strong>
                     </div>
+                </div>
+
+                <div className="col-12">
+                <div
+                        className="alert alert-secondary"
+                        role="alert"
+                    >
+                        <strong>
+                        Ako želite da ponovite prošlu nabavku, kliknite
+                        <a href="" onClick={this.repeatOrderFromPreviousMonth}>
+                        {" "} ovde.
+                        </a>
+                        </strong>
+                    </div>
+
                 </div>
 
                 <ToastContainer />
@@ -246,7 +352,7 @@ export default class OrderCreate extends Component {
                                             printer ? "text-info" : "d-none"
                                         }
                                     >
-                                        Cena ovog tonera je: {price}{" "}
+                                        Cena ovog tonera je: {helpers.formatNumber(price)}
                                     </span>
                                 </div>
 
@@ -289,7 +395,11 @@ export default class OrderCreate extends Component {
                                         className="form-control"
                                         disabled={true}
                                     />
+                                    <span className={quantity ? 'text-info' : 'd-none'}>
+                                      Preostali limit će biti: { helpers.formatNumber(limit - amount) }
+                                  </span>
                                 </div>
+
                                 <div className="form-group">
                                     <label htmlFor="napomena">Napomena</label>
                                     <textarea
