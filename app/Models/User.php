@@ -60,9 +60,14 @@ class User extends Authenticatable
         return $this->hasOne(Account::class, 'id', 'account_id');
     }
 
+    public function reminder()
+    {
+        return $this->hasMany(ReminderDate::class);
+    }
+
     public function order()
     {
-        return $this->hasMany(Order::class);
+        return $this->hasMany(Order::class, 'user_id');
     }
 
     public function isAdmin()

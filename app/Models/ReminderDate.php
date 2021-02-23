@@ -21,4 +21,10 @@ class ReminderDate extends Model {
     protected $dates = ['created_at', 'updated_at', 'deleted_at', 'reminder_date'];
 
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+
 }

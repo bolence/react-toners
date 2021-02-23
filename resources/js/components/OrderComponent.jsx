@@ -8,9 +8,10 @@ import { paginate } from "./functions/paginate";
 import helpers from "./commons/Helpers";
 import moment from "moment";
 import { ToastContainer } from "react-toastify";
-import Calendar from 'react-calendar';
+import { Calendar } from "react-modern-calendar-datepicker";
 import { Button, Modal } from "react-bootstrap";
-import 'react-calendar/dist/Calendar.css';
+import "react-modern-calendar-datepicker/lib/DatePicker.css";
+
 
 export default class Order extends Component {
     state = {
@@ -27,9 +28,10 @@ export default class Order extends Component {
         filteredData: [],
         user: helpers.getUser(),
         showReminderCalendar: false,
-        reminderDate: new Date(),
+        reminderDate: null,
         reminder_date_message: "",
         automaticCopy: false,
+        dateGreaterThan: false,
     };
 
     componentDidMount() {
@@ -120,10 +122,25 @@ export default class Order extends Component {
         });
     };
 
-    calendarChanged = e => {
+    calendarChanged = (date) => {
+        let today = moment();
+        let selected_date = moment(date).subtract(1, 'month');
+
+        if(selected_date < today)
+        {
+            this.setState({
+                dateGreaterThan: true,
+            });
+        }
+        else {
+            this.setState({
+                dateGreaterThan: false,
+            })
+        }
         this.setState({
-            reminderDate: e.target.value
-        }, console.log(this.state.reminderDate));
+            reminderDate: date
+        });
+
     }
 
     handleChangeCheckbox = () => {
@@ -134,13 +151,11 @@ export default class Order extends Component {
 
     saveOrderReminder = () => {
         let data = {
-            reminder_date: this.state.reminderDate,
+            reminder_date: moment(this.state.reminderDate).subtract(1, 'month').format('YYYY-MM-DD'),
             automatic_copy: this.state.automaticCopy
         }
 
-        console.log(data);
-        return;
-        axios.post('/api/reminders').then( response => {
+        axios.post('/api/reminders', data).then( response => {
             this.setState({
                 showReminderCalendar: false,
                 reminder_date_message: response.data.reminder_date_message
@@ -168,7 +183,8 @@ export default class Order extends Component {
             showReminderCalendar,
             reminderDate,
             reminder_date_message,
-            automatic_copy
+            automatic_copy,
+            dateGreaterThan
         } = this.state;
 
         const { length: count } =
@@ -201,14 +217,21 @@ export default class Order extends Component {
                         </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
+                        <div className={dateGreaterThan ? 'alert alert-danger alert-dismissible fade show' : 'd-none'} role="alert">
+                            <button type="button" className="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                                <span className="sr-only">Close</span>
+                            </button>
+                            <strong>Izabrali ste datum u prošlosti!</strong>
+                        </div>
                         <Calendar
                         onChange={this.calendarChanged}
                         value={reminderDate}
                         />
-
+                        <br/>
                         <span>
                             <input type="checkbox" onChange={this.handleChangeCheckbox} value={automatic_copy}/>
-                            Automatsko kopiranje porudžbenice iz prošlog meseca izabranog datuma
+                            {" "} Automatsko kopiranje porudžbenice iz prošlog meseca izabranog datuma
                         </span>
 
                     </Modal.Body>
@@ -221,6 +244,7 @@ export default class Order extends Component {
                         </Button>
                         <Button
                             variant="primary"
+                            disabled={dateGreaterThan}
                             onClick={() => this.saveOrderReminder()}
                         >
                             Snimi podsetnik
