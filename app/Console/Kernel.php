@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
        Commands\ProcessAutomaticOrders::class,
+       Commands\SendOrderPdfForCurrentMonth::class,
     ];
 
     /**
@@ -26,6 +27,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('automatic:orders')->daily();
+        $schedule->command('send:order')->monthlyOn(25, '09:00');
     }
 
     /**

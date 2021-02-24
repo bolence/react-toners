@@ -23,4 +23,5 @@ class PdfController extends Controller
                     ->setOption('footer-left', 'Kreiran ' . date('d.m.Y H:i'))
                     ->download('spisak_porucenih_tonera_za_' .date('m'). '.pdf');
     }
+
 }
