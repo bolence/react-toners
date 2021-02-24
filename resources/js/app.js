@@ -10,3 +10,4 @@ require('./components/UsersComponent');
 require('./components/PrintersComponent');
 require('./components/StatisticComponent');
 require('./components/GearsUserComponent');
+require('./components/TimerComponent');

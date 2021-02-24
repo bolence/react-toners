@@ -14,10 +14,12 @@
                                     <i class="fa fa-print"></i> Izveštaj za sve službe
                                 </a>
                             </li>
-                            <li><a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('frm-logout').submit();"class="dropdown-item"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                            <form id="frm-logout" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                {{ csrf_field() }}
-                            </form>
+                            <li>
+                                <span id="logout">
+                                    <Logout />
+                                </span>
+                            </li>
+
                             @if(Auth::check() && Auth::user()->isAdmin() && \App\Models\Order::get_count_of_orders())
                             <div class="dropdown-divider"></div>
 

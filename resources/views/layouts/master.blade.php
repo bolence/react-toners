@@ -18,6 +18,9 @@
         <div id="body" class="active">
             @include('layouts.partials.header')
             <div class="content">
+                <div id="timer">
+                    <Timer />
+                </div>
                 @yield('content')
             </div>
         </div>

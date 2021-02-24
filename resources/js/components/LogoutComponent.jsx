@@ -2,13 +2,16 @@ import axios from "axios";
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 
-class Logout extends Component {
+export default class Logout extends Component {
 
-    handleLogout = () => {
+
+      handleLogout = () => {
         let token = document.head.querySelector('meta[name="csrf-token"]');
-        axios.post('/logout', token).then(response => {
+        axios.post('/logout', token).then(() => {
             window.location.href = '/';
+            localStorage.clear();
         });
+
     }
     render() {
         return (
@@ -24,9 +27,6 @@ class Logout extends Component {
         );
     }
 }
-
-export default Logout;
-
 
 if (document.getElementById("logout")) {
     ReactDOM.render(<Logout />, document.getElementById("logout"));
