@@ -1,9 +1,7 @@
 import axios from "axios";
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
-
 export default class Logout extends Component {
-
 
       handleLogout = () => {
         let token = document.head.querySelector('meta[name="csrf-token"]');
@@ -12,7 +10,8 @@ export default class Logout extends Component {
             localStorage.clear();
         });
 
-    }
+    };
+
     render() {
         return (
             <li>

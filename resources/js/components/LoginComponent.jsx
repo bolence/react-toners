@@ -30,7 +30,8 @@ export default class Login extends Component {
                 localStorage.setItem('toneri.token', token);
                 localStorage.setItem('toneri.user', user);
                 localStorage.setItem('toneri.latest_session_time', new Date());
-                window.location.href = '/home';
+                window.location.href = '/home'
+
             })
             .catch(error => {
                 this.setState({ errors: error.data.errors });

@@ -14,12 +14,9 @@
                                     <i class="fa fa-print"></i> Izveštaj za sve službe
                                 </a>
                             </li>
-                            <li>
-                                <span id="logout">
-                                    <Logout />
-                                </span>
-                            </li>
-
+                            <span id="logout">
+                                <Logout />
+                            </span>
                             @if(Auth::check() && Auth::user()->isAdmin() && \App\Models\Order::get_count_of_orders())
                             <div class="dropdown-divider"></div>
 
