@@ -6,6 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 class ReminderDate extends Model {
 
     /**
+     * The "booting" method of the model.
+     *
+     * @return void
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+
+    }
+
+    /**
      * The attributes that aren't mass assignable.
      *
      * @var array
