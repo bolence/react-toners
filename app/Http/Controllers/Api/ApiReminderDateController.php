@@ -2,6 +2,7 @@
 
 use Exception;
 use App\Models\ReminderDate;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -10,8 +11,12 @@ use App\Notifications\AutomaticOrderCopyNotification;
 class ApiReminderDateController extends Controller {
 
 
-    public function store()
+    public function store(Request $request)
     {
+        $request->validate([
+            'reminder_date' => 'required'
+        ]);
+
         $user = Auth::user();
 
         if(
@@ -28,10 +33,10 @@ class ApiReminderDateController extends Controller {
         }
 
         $reminder = new ReminderDate;
-        $reminder->account_id = Auth::user()->account_id;
-        $reminder->user_id = Auth::id();
-        $reminder->reminder_date = request()->reminder_date;
-        $reminder->automatic_copy = (bool) request()->automatic_copy;
+        $reminder->account_id = $user->account_id;
+        $reminder->user_id = $user->id;
+        $reminder->reminder_date = $request->reminder_date;
+        $reminder->automatic_copy = (bool) $request->automatic_copy;
 
         try
         {
@@ -46,7 +51,7 @@ class ApiReminderDateController extends Controller {
             ], 400);
         }
 
-        Log::info(' Reminder saved by' . Auth::user()->name);
+        Log::info(' Reminder saved by' .$user->name);
 
         if( (bool) $reminder->automatic_copy )
         {
@@ -54,7 +59,7 @@ class ApiReminderDateController extends Controller {
         }
 
         return response()->json([
-            'message' => 'Uspešno snimljen podsetnik za porudžbenicu.Dobićete obaveštenje na email ' . Auth::user()->email,
+            'message' => 'Uspešno snimljen podsetnik za porudžbenicu.Dobićete obaveštenje na email ' . $user->email,
             'reminder_date_message' => 'Vaš podsetnik je podešen za ' . $reminder->reminder_date->format('d.m.Y') . '. Dobićete email kao podsetnik.',
         ], 200);
     }

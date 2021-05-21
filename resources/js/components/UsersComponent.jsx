@@ -144,7 +144,7 @@ class Users extends Component {
                                     ) : null}
                                 </td>
                                 <td>
-                                    <a
+                                    <a style={{ cursor: 'pointer' }}
                                         onClick={() =>
                                             this.handleModalShowHide(
                                                 user.account
@@ -157,7 +157,7 @@ class Users extends Component {
                                         ></i>
                                     </a>
                                     &nbsp;
-                                    <a
+                                    <a style={{ cursor: 'pointer' }}
                                         className={
                                             JSON.stringify(
                                                 user.account.bonus[0]

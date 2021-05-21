@@ -162,8 +162,10 @@ export default class Order extends Component {
             });
         }).catch( error => {
             this.setState({
-                showReminderCalendar: false
+                showReminderCalendar: false,
+                error: error.response.data.errors[0]
             });
+
             helpers.notify( error.response.data.message, true);
         });
     };
@@ -184,7 +186,8 @@ export default class Order extends Component {
             reminderDate,
             reminder_date_message,
             automatic_copy,
-            dateGreaterThan
+            dateGreaterThan,
+            error,
         } = this.state;
 
         const { length: count } =
@@ -229,6 +232,9 @@ export default class Order extends Component {
                         value={reminderDate}
                         />
                         <br/>
+                        <span className={error ? 'text-danger' : ''}>
+                            {error}
+                        </span>
                         <span>
                             <input type="checkbox" onChange={this.handleChangeCheckbox} value={automatic_copy}/>
                             {" "} Automatsko kopiranje porudžbenice iz prošlog meseca izabranog datuma
