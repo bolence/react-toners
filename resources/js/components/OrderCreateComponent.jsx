@@ -445,7 +445,7 @@ export default class OrderCreate extends Component {
                     <div className="card">
                         <div className="card-header">
                             Poručeno u ovom mesecu
-                            <span class={orders.lenght == 0 ?? 'd-none'}>-{" "}
+                            <span className={orders.lenght == 0 ?? 'd-none'}>-{" "}
                             {helpers.formatNumber(orders_sum)} ({orders.length + " toner/a"} )</span>
                         </div>
 
