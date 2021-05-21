@@ -207,7 +207,7 @@ export default class Order extends Component {
             <div className="row">
                 <ToastContainer />
 
-                <Modal show={showReminderCalendar}>
+                <Modal show={showReminderCalendar} onHide={() => this.handleOpenCloseModal()}>
                     <Modal.Header
                         closeButton
                         onClick={() => this.handleOpenCloseModal()}
@@ -224,9 +224,12 @@ export default class Order extends Component {
                             </button>
                             <strong>Izabrali ste datum u prošlosti!</strong>
                         </div>
+
                         <Calendar
                         onChange={this.calendarChanged}
                         value={reminderDate}
+                        width={1000}
+                        shouldHighlightWeekends
                         />
                         <br/>
                         <span>

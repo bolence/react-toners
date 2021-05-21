@@ -23,7 +23,8 @@ export default class Printers extends Component {
         catridge: "",
         errors: {},
         new_price: "",
-        new_name: ""
+        new_name: "",
+        new_catridge: ""
     };
 
     componentDidMount() {
@@ -63,21 +64,22 @@ export default class Printers extends Component {
             showUpdatePrinter: !this.state.showUpdatePrinter,
             name: printer.name,
             price: printer.price,
+            catridge: printer.catridge,
             printer
         });
     };
 
     handleNewPrinter = () => {
-        this.setState({ showNewPrinter: !this.state.showNewPrinter });
+        this.setState({ showNewPrinter: !this.state.showNewPrinter, errors: {} });
     };
 
     savePrinter = () => {
-        const { new_name, new_price, catridge } = this.state;
+        const { new_name, new_price, new_catridge } = this.state;
 
         let data = {
             name: new_name,
             price: new_price,
-            catridge: catridge
+            catridge: new_catridge,
         };
         axios
             .post("/api/printers", data)
@@ -97,12 +99,13 @@ export default class Printers extends Component {
     };
 
     updatePrice = () => {
-        const { name, price, printer } = this.state;
+        const { name, price, catridge, printer } = this.state;
         let id = printer.id;
 
         let data = {
             price: price,
-            name: name
+            name: name,
+            catridge: catridge,
         };
         axios
             .patch("/api/printers/" + id, data)
@@ -147,7 +150,8 @@ export default class Printers extends Component {
             catridge,
             errors,
             new_price,
-            new_name
+            new_name,
+            new_catridge,
         } = this.state;
         const { length: count } =
             this.state.filteredData.length > 0
@@ -162,7 +166,7 @@ export default class Printers extends Component {
         return (
             <div className="row">
                 <ToastContainer />
-                <Modal show={showNewPrinter}>
+                <Modal show={showNewPrinter} onHide={() => this.handleNewPrinter()}>
                     <Modal.Header
                         closeButton
                         onClick={() => this.handleNewPrinter()}
@@ -196,9 +200,9 @@ export default class Printers extends Component {
                                     ? "form-control is-invalid"
                                     : "form-control"
                             }
-                            name="catridge"
+                            name="new_catridge"
                             type="text"
-                            value={catridge}
+                            value={new_catridge}
                             onChange={this.onChange}
                         />
                         <div
@@ -260,6 +264,14 @@ export default class Printers extends Component {
                             name="name"
                             type="text"
                             value={name}
+                            onChange={this.onChange}
+                        />
+                         <label htmlFor="">Naziv tonera</label>
+                        <input
+                            className="form-control"
+                            name="catridge"
+                            type="text"
+                            value={catridge}
                             onChange={this.onChange}
                         />
                         <label htmlFor="">Cena tonera</label>
