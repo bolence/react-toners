@@ -26,7 +26,7 @@ const helpers = {
     notify(message, color, speed, pos) {
         const customOptions = {
             position: pos ? pos : "top-right",
-            autoClose: speed ? speed : 2000
+            autoClose: speed ? speed : 3000
         };
 
         let options = {...defaultToastOption, ...customOptions }

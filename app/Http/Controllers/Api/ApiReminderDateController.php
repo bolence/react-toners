@@ -13,17 +13,13 @@ class ApiReminderDateController extends Controller {
 
     public function store(Request $request)
     {
-        $request->validate([
-            'reminder_date' => 'required'
-        ]);
 
         $user = Auth::user();
 
         if(
             ReminderDate::where('account_id', '=', $user->account_id)
-                        ->where('user_id', '=', Auth::id())
+                        ->where('user_id', '=', $user->id)
                         ->whereMonth('created_at', '=', date('m'))
-                        ->whereYear('created_at', '=', date('Y'))
                         ->exists()
         )
         {

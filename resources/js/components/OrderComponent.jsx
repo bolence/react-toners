@@ -32,6 +32,7 @@ export default class Order extends Component {
         reminder_date_message: "",
         automaticCopy: false,
         dateGreaterThan: false,
+        show_info: false,
     };
 
     componentDidMount() {
@@ -145,14 +146,21 @@ export default class Order extends Component {
 
     handleChangeCheckbox = () => {
         this.setState({
-            automaticCopy: !this.state.automaticCopy
+            automaticCopy: !this.state.automaticCopy,
+            show_info: !this.state.show_info
         });
     }
 
     saveOrderReminder = () => {
+
         let data = {
             reminder_date: moment(this.state.reminderDate).subtract(1, 'month').format('YYYY-MM-DD'),
             automatic_copy: this.state.automaticCopy
+        }
+
+        if(data.reminder_date == 'Invalid date') {
+            helpers.notify('Datum nije izabran! Datum je obavezan!', true);
+            return;
         }
 
         axios.post('/api/reminders', data).then( response => {
@@ -188,6 +196,7 @@ export default class Order extends Component {
             automatic_copy,
             dateGreaterThan,
             error,
+            show_info
         } = this.state;
 
         const { length: count } =
@@ -240,7 +249,14 @@ export default class Order extends Component {
                         </span>
                         <span>
                             <input type="checkbox" onChange={this.handleChangeCheckbox} value={automatic_copy}/>
-                            {" "} Automatsko kopiranje porudžbenice iz prošlog meseca izabranog datuma
+                            {" "} Automatsko kopiranje porudžbenice iz prošlog meseca
+                            <div class={show_info ? 'alert alert-primary alert-dismissible fade show' : 'd-none'} role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                    <span class="sr-only">Close</span>
+                                </button>
+                                <strong>Čekiranjem potvrđujete da se vaša porudžbenica iz prošlog meseca kopira kao porudžbenica za ovaj mesec. Radnja će biti izvršena na izabrani datum.</strong>
+                            </div>
                         </span>
 
                     </Modal.Body>
@@ -258,6 +274,7 @@ export default class Order extends Component {
                         >
                             Snimi podsetnik
                         </Button>
+
                     </Modal.Footer>
                 </Modal>
                 <div

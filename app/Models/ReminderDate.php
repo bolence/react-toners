@@ -1,5 +1,6 @@
 <?php namespace App\Models;
 
+use App\Scopes\YearScope;
 use Illuminate\Database\Eloquent\Model;
 
 
@@ -13,8 +14,7 @@ class ReminderDate extends Model {
     protected static function boot()
     {
         parent::boot();
-
-
+        static::addGlobalScope(new YearScope);
     }
 
     /**
