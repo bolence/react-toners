@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Api;
 
-use Auth;
-use Exception;
-use App\Models\Order;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\CreateNewOrder;
 use App\Models\Account;
+use App\Models\Order;
 use App\Models\Printer;
 use App\Traits\Financial;
+use Auth;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\CreateNewOrder;
 
 class ApiOrdersController extends Controller
 {
@@ -27,21 +27,20 @@ class ApiOrdersController extends Controller
         $month = $request->month ? $request->month : date('m');
 
         $orders = Order::with('account', 'printer')
-        ->when($month !== 'all', function($q) use($user, $month){
-            $q->where('account_id', '=', $user->account_id)->whereRaw('MONTH(created_at) = ' . $month);
-        })->whereYear('created_at', '=', $year)
-        ->when($month == 'all', function($q) {
-            $q->where('month', '=', date('m'));
-        })
-        ->orderBy('id', 'desc')
-        ->get();
-
+            ->when($month !== 'all', function ($q) use ($user, $month) {
+                $q->where('account_id', '=', $user->account_id)->whereRaw('MONTH(created_at) = ' . $month);
+            })->whereYear('created_at', '=', $year)
+            ->when($month == 'all', function ($q) {
+                $q->where('month', '=', date('m'));
+            })
+            ->orderBy('id', 'desc')
+            ->get();
 
         return response()->json([
             'orders' => $orders,
             'orders_count' => $orders->count(),
             'title' => "Poručeni toneri " . $user->account->sluzba . " u $year.godini",
-            'summary' => $this->get_summary_info()
+            'summary' => $this->get_summary_info(),
         ], 200);
     }
 
@@ -52,8 +51,7 @@ class ApiOrdersController extends Controller
         $printer = Printer::find($request->printer);
         $order_sum = $request->quantity * $printer->price;
 
-        if( $this->get_summary() < $order_sum)
-        {
+        if ($this->get_summary() < $order_sum) {
             return response()->json([
                 'message' => 'Premašili ste limit za ovaj mesec',
                 'errors' => [],
@@ -63,20 +61,20 @@ class ApiOrdersController extends Controller
         $this->check_if_exist($user->account_id, $request->printer);
 
         Order::create([
-            'quantity'   => $request->quantity,
+            'quantity' => $request->quantity,
             'printer_id' => $request->printer,
-            'price'      => $printer->price,
-            'month'      => date('m'),
+            'price' => $printer->price,
+            'month' => date('m'),
             'account_id' => $user->account_id,
             'user_id' => $user->id,
-            'napomena'   => isset($request->napomena) ? $request->napomena : null
+            'napomena' => isset($request->napomena) ? $request->napomena : null,
         ]);
 
         return response()->json([
-            'message' => 'Uspešno snimljena porudžbenica',
+            'message' => 'Uspešno dodat toner',
             'order' => Order::with('printer')->latest()->first(),
             'summary' => $this->get_summary_info(),
-            'errors' => []
+            'errors' => [],
         ], 200);
     }
 
@@ -93,8 +91,7 @@ class ApiOrdersController extends Controller
         $limit = $account->limit;
         $sum_of_ordered = (new Order)->orders_sum(Auth::user()->account->id);
 
-        if( ($limit - $sum_of_ordered) > $order_price )
-        {
+        if (($limit - $sum_of_ordered) > $order_price) {
             return false;
         }
 
@@ -105,15 +102,14 @@ class ApiOrdersController extends Controller
     {
 
         $order = Order::where('account_id', '=', $account_id)
-        ->where('printer_id', '=', $printer_id)
-        ->where('month', '=', date('m'))
-        ->whereYear('created_at', '=', date('Y'))
-        ->first();
+            ->where('printer_id', '=', $printer_id)
+            ->where('month', '=', date('m'))
+            ->whereYear('created_at', '=', date('Y'))
+            ->first();
 
-        if($order)
-        {
+        if ($order) {
             return response()->json([
-                'message' => 'Ovaj toner ste već dodali ovog meseca. Dodajte drugi.'
+                'message' => 'Ovaj toner ste već dodali ovog meseca. Dodajte drugi.',
             ], 400);
         }
     }
@@ -129,26 +125,23 @@ class ApiOrdersController extends Controller
 
         $order = Order::find($id);
 
-        if( ! $order && !Auth::user()->isAdmin() )
-        {
+        if (!$order && !Auth::user()->isAdmin()) {
             return response()->json([
-                'message' => 'Ova porudžbenica ne postoji u bazi podataka!'
+                'message' => 'Ova porudžbenica ne postoji u bazi podataka!',
             ], 400);
         }
 
         try
         {
             $order->delete();
-        }
-        catch (Exception $e)
-        {
+        } catch (Exception $e) {
 
             Log::error($e->getMessage());
 
             return response()->json([
                 'message' => 'Nismo uspeli da izbrišemo ovu porudžbenicu',
                 'error_message' => $e->getMessage(),
-            ],400);
+            ], 400);
         }
 
         Log::info('Order has been deleted');
@@ -166,7 +159,7 @@ class ApiOrdersController extends Controller
             'orders_sum' => $this->get_orders_sum(),
             'limit' => $this->get_limit(),
             'orders_count' => $this->get_orders_count(),
-            'summary' => $this->get_summary()
+            'summary' => $this->get_summary(),
         ];
     }
 
@@ -189,12 +182,11 @@ class ApiOrdersController extends Controller
     public function copy_order_from_last_month()
     {
         $last_month_orders = Order::whereMonth('created_at', '=', date('m') - 1)
-                                    ->whereYear('created_at', '=', date('Y'))
-                                    ->where('account_id', '=', Auth::user()->account_id)
-                                    ->get();
+            ->where('account_id', '=', Auth::user()->account_id)
+            ->get();
 
-        foreach($last_month_orders as $orders)
-        {
+        foreach ($last_month_orders as $orders) {
+
             $order = new Order;
             $order->quantity = $orders->quantity;
             $order->price = $orders->price;
@@ -208,18 +200,17 @@ class ApiOrdersController extends Controller
 
         $copied_orders = Order::current_month_order(Auth::user()->account_id);
 
-        if( $saved )
-        {
+        if ($saved) {
             return response()->json([
                 'message' => 'Uspešno ste kopirali porudžbenicu iz prošlog meseca',
-                'orders'  => $copied_orders,
+                'orders' => $copied_orders,
                 'orders_count' => $copied_orders->count(),
                 'summary' => $this->get_summary_info(),
             ], 200);
         }
 
         return response()->json([
-            'message' => 'Došlo je do greške prilikom kopiranja porudžbenice'
+            'message' => 'Došlo je do greške prilikom kopiranja porudžbenice',
         ], 400);
     }
 }

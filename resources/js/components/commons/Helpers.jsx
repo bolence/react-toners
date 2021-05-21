@@ -30,7 +30,6 @@ const helpers = {
         };
 
         let options = {...defaultToastOption, ...customOptions }
-        console.log(options);
         !color ? toast.success(message, options) : toast.error(message, options);
     },
 

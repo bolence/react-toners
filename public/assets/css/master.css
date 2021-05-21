@@ -56,7 +56,9 @@ Notes:  decreasing heading by 0.4em with every subsequent heading level
     font-weight: 400;
     font-display: auto;
     src: url("../font/Lato-Regular.eot");
-    src: url("../font/Lato-Regular.eot?#iefix") format("embedded-opentype"), url("../font/Lato-Regular.woff") format("woff"), url("../font/Lato-Regular.ttf") format("truetype");
+    src: url("../font/Lato-Regular.eot?#iefix") format("embedded-opentype"),
+        url("../font/Lato-Regular.woff") format("woff"),
+        url("../font/Lato-Regular.ttf") format("truetype");
 }
 
 body,
@@ -92,7 +94,7 @@ body {
     display: flex;
     width: 100%;
     align-items: stretch;
-    overflow-x: hidden
+    overflow-x: hidden;
 }
 
 #body {
@@ -105,7 +107,7 @@ body {
 /*------------------------------------------------------------------
 [2. Header / #header]
 */
-#body>.navbar {
+#body > .navbar {
     padding: 0 1.5rem;
     min-height: 54px;
     box-shadow: none;
@@ -122,16 +124,16 @@ body {
 }
 
 .default-light-menu:hover {
-    background: #2196F3 !important;
+    background: #2196f3 !important;
     color: #fff;
 }
 
 /*------------------------------------------------------------------
 [4. Content / #content]
 */
-#body>.content {
+#body > .content {
     position: relative;
-    padding: .5rem;
+    padding: 0.5rem;
 }
 
 #body .content .page-title h3 {
@@ -143,7 +145,7 @@ body {
 */
 
 /*------------------------------------------------------------------
-[6. Boxes / .box] 
+[6. Boxes / .box]
 */
 .box {
     position: relative;
@@ -170,7 +172,7 @@ body {
     border-bottom-left-radius: 3px;
     border-top: 1px solid #f4f4f4;
     padding: 10px 20px;
-    background-color: #FAFAFA;
+    background-color: #fafafa;
     text-align: right;
 }
 
@@ -179,7 +181,7 @@ body {
 }
 
 /*------------------------------------------------------------------
-[7. Dashboard Cards / .card] 
+[7. Dashboard Cards / .card]
 */
 .card {
     margin-bottom: 15px;
@@ -214,15 +216,15 @@ body {
 }
 
 /*------------------------------------------------------------------
-[8. Miscellaneous ] 
+[8. Miscellaneous ]
 */
 .line {
-    border-bottom: 1px solid #E0E0E0;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .nav-pills {
     padding: 15px;
-    background-color: #E0E0E0;
+    background-color: #e0e0e0;
     -webkit-box-shadow: 0 3px 10px 0 rgba(0, 0, 0, 0.05);
     box-shadow: 0 3px 10px 0 rgba(0, 0, 0, 0.05);
 }
@@ -256,11 +258,11 @@ body {
 }
 
 .bg-lighter-grey {
-    background: #FAFAFA;
+    background: #fafafa;
 }
 
 /*------------------------------------------------------------------
-[9. Adjustments to default behaviors] 
+[9. Adjustments to default behaviors]
 */
 a,
 a:hover,
@@ -294,15 +296,15 @@ table.dataTable thead .sorting_asc_disabled:before,
 table.dataTable thead .sorting_asc_disabled:after,
 table.dataTable thead .sorting_desc_disabled:before,
 table.dataTable thead .sorting_desc_disabled:after {
-    font-size: .8rem;
-    bottom: .9rem;
+    font-size: 0.8rem;
+    bottom: 0.9rem;
 }
 
 .dataTables_info {
     visibility: hidden;
 }
 
-table.dataTable>tbody>tr.child ul.dtr-details {
+table.dataTable > tbody > tr.child ul.dtr-details {
     display: block;
 }
 
@@ -316,8 +318,8 @@ table.dataTable>tbody>tr.child ul.dtr-details {
 
 .nav-tabs .nav-link {
     border: none;
-    -webkit-transition: color .1s ease;
-    transition: color .1s ease;
+    -webkit-transition: color 0.1s ease;
+    transition: color 0.1s ease;
 }
 
 .nav-tabs .nav-item.show .nav-link,
@@ -325,7 +327,6 @@ table.dataTable>tbody>tr.child ul.dtr-details {
     color: #007bff;
     background-color: #fff;
     border-bottom: 2px solid #22a1f9;
-
 }
 
 .tab-content {
@@ -349,7 +350,7 @@ table.dataTable>tbody>tr.child ul.dtr-details {
 }
 
 /*------------------------------------------------------------------
-[10. Colors / .teal, .olive, .violet, .orange, .darkgray, .blue, .grey] 
+[10. Colors / .teal, .olive, .violet, .orange, .darkgray, .blue, .grey]
 */
 .teal {
     color: #00b5ad !important;
@@ -380,7 +381,7 @@ table.dataTable>tbody>tr.child ul.dtr-details {
 }
 
 /*------------------------------------------------------------------
-[11. Responsive properties] 
+[11. Responsive properties]
 */
 @media (max-width: 768px) {
     .display-absolute {

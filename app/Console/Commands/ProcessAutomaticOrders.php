@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Carbon\Carbon;
 use App\Models\Order;
 use App\Models\ReminderDate;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class ProcessAutomaticOrders extends Command
@@ -45,25 +45,24 @@ class ProcessAutomaticOrders extends Command
         $today = Carbon::today()->format('Y-m-d');
 
         $users_reminders = ReminderDate::with('user')
-                            ->whereDone(0)
-                            ->whereDate('reminder_date', '=', $today)
-                            ->get();
-
-        if( ! $users_reminders ) return;
-
-        foreach($users_reminders as $reminder)
-        {
-            $last_month_orders = Order::whereMonth('created_at', '=', date('m') - 1)
-            ->whereYear('created_at', '=', date('Y'))
-            ->where('account_id', '=', $reminder->user->account_id)
+            ->whereDone(0)
+            ->whereDate('reminder_date', '=', $today)
+            ->where('automatic_copy', '=', 1)
             ->get();
+
+        if (!$users_reminders) {
+            return;
+        }
+
+        foreach ($users_reminders as $reminder) {
+            $last_month_orders = Order::whereMonth('created_at', '=', date('m') - 1)
+                ->where('account_id', '=', $reminder->user->account_id)
+                ->get();
 
             $this->info('Last month orders: ' . $last_month_orders->count());
 
-            if( $last_month_orders )
-            {
-                foreach($last_month_orders as $last_order)
-                {
+            if ($last_month_orders) {
+                foreach ($last_month_orders as $last_order) {
                     $order = new Order;
                     $order->quantity = $last_order->quantity;
                     $order->price = $last_order->price;
