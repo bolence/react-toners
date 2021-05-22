@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Order;
 use App\Models\ReminderDate;
 use App\Models\User;
+use App\Notifications\InfoAboutAutomaticOrderFinished;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
@@ -48,6 +49,7 @@ class ProcessAutomaticOrders extends Command
             ->whereDone(0)
             ->whereDate('reminder_date', '=', $today)
             ->where('automatic_copy', '=', 1)
+            ->where('done', '=', 0)
             ->get();
 
         if (!$users_reminders) {

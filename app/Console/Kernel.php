@@ -13,8 +13,8 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-       Commands\ProcessAutomaticOrders::class,
-       Commands\SendOrderPdfForCurrentMonth::class,
+        Commands\ProcessAutomaticOrders::class,
+        Commands\SendOrderPdfForCurrentMonth::class,
     ];
 
     /**
@@ -27,7 +27,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('automatic:orders')->daily();
-        $schedule->command('send:order')->monthlyOn(25, '09:00');
+        $schedule->command('send:order')->monthlyOn(28, '09:00');
     }
 
     /**
@@ -37,7 +37,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }

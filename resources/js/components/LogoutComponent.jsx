@@ -4,9 +4,9 @@ import ReactDOM from "react-dom";
 export default class Logout extends Component {
 
       handleLogout = () => {
-        let token = document.head.querySelector('meta[name="csrf-token"]');
-        axios.post('/logout', token).then(() => {
-            window.location.href = '/';
+        // let token = document.head.querySelector('meta[name="csrf-token"]');
+        axios.get('/logout').then(() => {
+            // window.location.href = '/';
             localStorage.clear();
         });
 

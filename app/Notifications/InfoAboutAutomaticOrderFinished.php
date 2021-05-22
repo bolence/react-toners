@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -41,9 +40,11 @@ class InfoAboutAutomaticOrderFinished extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+            ->greeting('Dobar dan!')
+            ->subject('Potvrda o porudžbenici za ' . date('m') . '.mesec')
+            ->line('Potvrda o automatskom popunjavanju porudžbenice za trenutni mesec.')
+            ->line('Uspešno je kopirana vaša porudžbenica iz prošlog meseca za trenutni mesec')
+            ->line('Hvala na korišćenju aplikacije.');
     }
 
     /**

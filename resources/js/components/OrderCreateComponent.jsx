@@ -27,6 +27,7 @@ export default class OrderCreate extends Component {
         previousMonthOrders: {},
         showPreviousMonthOrder: false,
         lastMonthOrders: {},
+        copiedFromLastMonth: false
     };
 
     handleSubmit = e => {
@@ -125,7 +126,8 @@ export default class OrderCreate extends Component {
                     bonus: response.data.summary.bonus,
                     limit: response.data.summary.limit,
                     orders_sum: response.data.summary.orders_sum,
-                    summary: response.data.summary.summary
+                    summary: response.data.summary.summary,
+                    copiedFromLastMonth: response.data.copied
                 });
             })
             .catch(error => {
@@ -164,6 +166,9 @@ export default class OrderCreate extends Component {
                 previousMonthOrders: response.data,
                 showPreviousMonthOrder: true,
                 lastMonthOrders: response.data.orders,
+                last_month_orders_sum: response.data.summary.orders_sum,
+                last_month_summary: response.data.summary.summary,
+
             });
         }).catch( error => {
 
@@ -178,11 +183,9 @@ export default class OrderCreate extends Component {
 
     copyOrderFromLastMonth = () => {
         axios.get('/api/orders/copy_orders').then( response => {
-            let orders = [...this.state.orders];
-            orders.push(response.data.orders[0]);
             helpers.notify(response.data.message);
             this.setState({
-                orders,
+                orders : response.data.orders,
                 showPreviousMonthOrder: false,
                 bonus: response.data.summary.bonus,
                 limit: response.data.summary.limit,
@@ -198,6 +201,7 @@ export default class OrderCreate extends Component {
     };
 
     render() {
+
         const {
             printer,
             catrigde,
@@ -213,8 +217,13 @@ export default class OrderCreate extends Component {
             summary,
             price,
             showPreviousMonthOrder,
-            lastMonthOrders
+            lastMonthOrders,
+            last_month_orders_sum,
+            last_month_summary,
+            copiedFromLastMonth
         } = this.state;
+
+        const notEnoughMoney = last_month_orders_sum > last_month_summary;
 
         return (
             <div className="row">
@@ -224,17 +233,27 @@ export default class OrderCreate extends Component {
                         onClick={() => this.handleOpenCloseModal()}
                     >
                         <Modal.Title>
-                            Porudžbenica iz prošlog meseca
+                            Porudžbenica iz prošlog meseca - {helpers.formatNumber(last_month_orders_sum)} RSD
                         </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
+                        <div className={notEnoughMoney ? 'alert alert-danger alert-dismissible fade show' : 'd-none' } role="alert">
+                            <button type="button" className="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                                <span className="sr-only">Close</span>
+                            </button>
+                            <strong>Porudžbenica iz prošlog meseca je veća nego vaš limit.</strong>
+                        </div>
                         {lastMonthOrders.length > 0 ?
+
                         <table className="table table-striped">
                             <thead>
                                 <tr>
                                     <th>Štampač</th>
                                     <th>Ketridž</th>
                                     <th>Količina</th>
+                                    <th>Cena</th>
+                                    <th>Kreirano</th>
                                 </tr>
                                 </thead>
 
@@ -244,12 +263,14 @@ export default class OrderCreate extends Component {
                                         <td scope="row">{order.printer.name}</td>
                                         <td>{order.printer.catridge}</td>
                                         <td>{order.quantity}</td>
+                                        <td>{order.price * order.quantity}</td>
+                                        <td>{new Date(order.created_at).toLocaleDateString()}</td>
                                     </tr>
                                     )}
                                 </tbody>
                         </table> :
                         <div className="alert alert-info alert-dismissible fade show" role="alert">
-                          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                          <button type="button" className="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                           </button>
                           <strong> Nemate porudžbine za prošli mesec.</strong>
@@ -264,7 +285,7 @@ export default class OrderCreate extends Component {
                         </Button>
                         <Button
                             variant="primary"
-                            className={lastMonthOrders.length == 0 ? 'd-none' : '' }
+                            className={lastMonthOrders.length == 0 || notEnoughMoney ? 'd-none' : '' }
                             onClick={() => this.copyOrderFromLastMonth()}
                         >
                             Kopiraj porudžbenicu
@@ -288,12 +309,12 @@ export default class OrderCreate extends Component {
                         <strong>
                             Trenutni limit: {helpers.formatNumber(limit)}.
                             Bonus: {helpers.formatNumber(bonus)}. Preostalo za
-                            ovaj mesec: {helpers.formatNumber(summary)}
+                            ovaj mesec: {helpers.formatNumber(summary - orders_sum)}
                         </strong>
                     </div>
                 </div>
 
-                <div className="col-12">
+                <div className={!copiedFromLastMonth ? 'col-12' : 'd-none' }>
                 <div
                         className="alert alert-secondary"
                         role="alert"
@@ -319,7 +340,7 @@ export default class OrderCreate extends Component {
                                 acceptCharset="utf-8"
                                 onSubmit={this.handleSubmit}
                             >
-                                <div className={errors.length ? 'alert alert-danger alert-dismissible fade show' : 'd-none'} role="alert">
+                                <div className={errors.length > 0 ? 'alert alert-danger alert-dismissible fade show' : 'd-none'} role="alert">
                                     <button type="button" className="close" data-dismiss="alert" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>
                                         <span className="sr-only">Close</span>
@@ -405,11 +426,11 @@ export default class OrderCreate extends Component {
                                         className="form-control"
                                         disabled={true}
                                     />
-                                    <span className={quantity ? 'text-info' : 'd-none'}>
+                                    <span className={quantity ? 'text-danger font-weight-bold' : 'd-none'}>
                                         {
-                                        summary - amount > 0
-                                        ? 'Preostali limit će biti: ' + helpers.formatNumber(summary - amount)
-                                        : 'Nemate dovoljno sredstava za ovaj toner'
+                                        (summary - orders_sum) - amount > 0
+                                        ? 'Preostali limit će biti: ' + helpers.formatNumber((summary - orders_sum) - amount)
+                                        : 'Nemate dovoljno sredstava za ovaj toner!!!'
                                         }
 
                                   </span>
@@ -430,7 +451,7 @@ export default class OrderCreate extends Component {
                                 <div className="form-group float-right">
                                     <button
                                         type="submit"
-                                        disabled={summary - amount < 0}
+                                        disabled={(summary - orders_sum) - amount < 0}
                                         className='btn btn-primary'
                                     >
                                         Snimi porudžbenicu
@@ -445,7 +466,7 @@ export default class OrderCreate extends Component {
                     <div className="card">
                         <div className="card-header">
                             Poručeno u ovom mesecu
-                            <span className={orders.lenght == 0 ?? 'd-none'}>-{" "}
+                            <span className={orders.length == 0 ? 'd-none' : ''}>-{" "}
                             {helpers.formatNumber(orders_sum)} ({orders.length + " toner/a"} )</span>
                         </div>
 

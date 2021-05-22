@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\Order;
-use App\Services\PDFCreator;
 use App\Notifications\PdfOrder;
+use App\Services\PDFCreator;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -43,15 +43,15 @@ class SendOrderPdfForCurrentMonth extends Command
     {
 
         $orders = Order::with('user')->whereMonth('created_at', '=', date('m'))
-                        ->whereYear('created_at', '=', date('Y'))
-                        ->get();
+            ->get();
 
-        if(!$orders) return;
+        if (!$orders) {
+            return;
+        }
 
-        foreach($orders as $order)
-        {
+        foreach ($orders as $order) {
             PDFCreator::create_pdf($order->user);
-            $order->user->notify( new PdfOrder($order->user) );
+            $order->user->notify(new PdfOrder($order->user));
             Log::info('PDF orders sent to ' . $order->user->name);
         }
 

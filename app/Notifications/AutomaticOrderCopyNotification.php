@@ -4,9 +4,9 @@ namespace App\Notifications;
 
 use App\Models\ReminderDate;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
 
 class AutomaticOrderCopyNotification extends Notification implements ShouldQueue
 {
@@ -44,10 +44,10 @@ class AutomaticOrderCopyNotification extends Notification implements ShouldQueue
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->greeting('Dobar dan!')
-                    ->subject('Automatsko kopiranje porudžbenice')
-                    ->line('Podesili ste automatsko kopiranje vaše prošle porudžbenice.')
-                    ->line('Uspešno ste podesili automatsko kopiranje vaše porudžbine iz prošlog meseca. Izabrani datum kad će se to dogoditi je ' . $this->reminder->reminder_date->format('d.m.Y') . '. Dobićete email obaveštenje kad se ova radnja završi.')
-                    ->line('Hvala na korišćenju aplikacije.');
+            ->greeting('Dobar dan!')
+            ->subject('Automatsko kopiranje porudžbenice')
+            ->line('Podesili ste automatsko kopiranje vaše prošle porudžbenice.')
+            ->line('Uspešno ste podesili automatsko kopiranje vaše porudžbinice iz prošlog meseca. Izabrani datum kad će se to dogoditi je ' . $this->reminder->reminder_date->format('d.m.Y') . '. Dobićete email obaveštenje kad se ova radnja završi.')
+            ->line('Hvala na korišćenju aplikacije.');
     }
 }

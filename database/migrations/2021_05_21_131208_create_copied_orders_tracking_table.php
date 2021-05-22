@@ -15,8 +15,8 @@ class CreateCopiedOrdersTrackingTable extends Migration
     {
         Schema::create('copied_orders_tracking', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('user_id')->index();
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->unsignedInteger('account_id')->index();
+            $table->foreign('account_id')->references('id')->on('accounts');
             $table->smallInteger('order_month');
             $table->smallInteger('order_year');
             $table->decimal('order_sum');

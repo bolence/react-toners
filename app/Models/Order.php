@@ -76,8 +76,8 @@ class Order extends Model
 
     public static function current_month_order($account_id)
     {
-        return self::with(['printer', 'account'])
-            ->whereRaw('MONTH(created_at) = ' . date('m'))
+        return self::with('printer', 'account')
+            ->whereMonth('created_at', '=', date('m'))
             ->where('account_id', '=', $account_id)
             ->get();
     }

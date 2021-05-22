@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateNewOrder;
 use App\Models\Account;
+use App\Models\CopiedOrder;
 use App\Models\Order;
 use App\Models\Printer;
 use App\Traits\Financial;
 use Auth;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -36,11 +38,14 @@ class ApiOrdersController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
+        $copied = CopiedOrder::where('account_id', '=', $user->account_id)->whereMonth('created_at', '=', date('m'))->exists();
+
         return response()->json([
             'orders' => $orders,
             'orders_count' => $orders->count(),
-            'title' => "Poručeni toneri " . $user->account->sluzba . " u $year.godini",
-            'summary' => $this->get_summary_info(),
+            'title' => "Poručeni toneri " . $user->sluzba . " u $year.godini",
+            'summary' => $this->get_summary_info($month),
+            'copied' => $copied,
         ], 200);
     }
 
@@ -148,15 +153,15 @@ class ApiOrdersController extends Controller
 
         return response()->json([
             'message' => 'Uspešno ste izbrisali porudžbenicu',
-            'summary' => $this->get_summary_info(),
+            'summary' => $this->get_summary_info($order->month),
         ], 200);
     }
 
-    private function get_summary_info()
+    private function get_summary_info($month = null)
     {
         return [
             'bonus' => $this->get_bonus(),
-            'orders_sum' => $this->get_orders_sum(),
+            'orders_sum' => $this->get_orders_sum($month),
             'limit' => $this->get_limit(),
             'orders_count' => $this->get_orders_count(),
             'summary' => $this->get_summary(),
@@ -181,8 +186,10 @@ class ApiOrdersController extends Controller
 
     public function copy_order_from_last_month()
     {
+        $user = Auth::user();
+
         $last_month_orders = Order::whereMonth('created_at', '=', date('m') - 1)
-            ->where('account_id', '=', Auth::user()->account_id)
+            ->where('account_id', '=', $user->account_id)
             ->get();
 
         foreach ($last_month_orders as $orders) {
@@ -198,14 +205,23 @@ class ApiOrdersController extends Controller
             $saved = $order->save();
         }
 
-        $copied_orders = Order::current_month_order(Auth::user()->account_id);
+        $copied_orders = Order::current_month_order($user->account_id);
+
+        CopiedOrder::create([
+            'account_id' => $user->account_id,
+            'order_month' => Carbon::today()->format('m'),
+            'order_year' => Carbon::today()->format('Y'),
+            'order_sum' => $this->get_orders_sum($order->month),
+            'order_count' => $last_month_orders->count(),
+        ]);
 
         if ($saved) {
             return response()->json([
                 'message' => 'Uspešno ste kopirali porudžbenicu iz prošlog meseca',
                 'orders' => $copied_orders,
                 'orders_count' => $copied_orders->count(),
-                'summary' => $this->get_summary_info(),
+                'summary' => $this->get_summary_info($order->month),
+                'copied' => true,
             ], 200);
         }
 

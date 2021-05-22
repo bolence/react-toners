@@ -225,10 +225,19 @@ export default class Order extends Component {
                         onClick={() => this.handleOpenCloseModal()}
                     >
                         <Modal.Title>
-                            Podesite podsetnik za vašu porudžbenicu u ovom mesecu
+                            Izaberite datum automatskog kopiranja
                         </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
+
+                    <div className="alert alert-primary alert-dismissible fade show" role="alert">
+                                <button type="button" className="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                    <span className="sr-only">Close</span>
+                                </button>
+                                <strong>Vaša porudžbenica iz prošlog meseca će biti kopirana kao porudžbenica za ovaj mesec. Radnja će biti izvršena na izabrani datum.</strong>
+                            </div>
+
                         <div className={dateGreaterThan ? 'alert alert-danger alert-dismissible fade show' : 'd-none'} role="alert">
                             <button type="button" className="close" data-dismiss="alert" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
@@ -247,17 +256,11 @@ export default class Order extends Component {
                         <span className={error ? 'text-danger' : ''}>
                             {error}
                         </span>
-                        <span>
+                        {/* <span>
                             <input type="checkbox" onChange={this.handleChangeCheckbox} value={automatic_copy}/>
-                            {" "} Automatsko kopiranje porudžbenice iz prošlog meseca
-                            <div class={show_info ? 'alert alert-primary alert-dismissible fade show' : 'd-none'} role="alert">
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                    <span class="sr-only">Close</span>
-                                </button>
-                                <strong>Čekiranjem potvrđujete da se vaša porudžbenica iz prošlog meseca kopira kao porudžbenica za ovaj mesec. Radnja će biti izvršena na izabrani datum.</strong>
-                            </div>
-                        </span>
+                            {" "} Automatsko kopiranje porudžbenice iz prošlog meseca */}
+
+                        {/* </span> */}
 
                     </Modal.Body>
                     <Modal.Footer>
@@ -292,7 +295,7 @@ export default class Order extends Component {
                             </b>
                             <span className="float-right">
                                 <button className="btn btn-primary" onClick={this.handleOpenCloseModal}>
-                                    <i className="fa fa-calendar"></i> Dodaj podsetnik
+                                    <i className="fa fa-calendar"></i> Automatsko kopiranje
                                 </button>
                             </span>
                         </div>

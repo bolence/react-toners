@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
@@ -35,10 +34,18 @@ class HomeController extends Controller
      */
     public function limits()
     {
-        if( ! Auth::user()->isAdmin())
-        {
+        if (!Auth::user()->isAdmin()) {
             abort(403);
         }
         return view('limits', ['title' => 'Limiti']);
+    }
+
+    public function keep_alive()
+    {
+        if (!Auth::check()) {
+            Auth::logout();
+        }
+
+        return true;
     }
 }

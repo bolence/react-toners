@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
 
 class LoginController extends Controller
 {
@@ -40,7 +40,8 @@ class LoginController extends Controller
     {
         return response()->json([
             'user' => $user,
-            'token' => $user->createToken('toneri')->accessToken
+            'token' => $user->createToken('toneri')->accessToken,
         ], 200);
     }
+
 }

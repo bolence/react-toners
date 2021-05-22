@@ -10,6 +10,16 @@ class Account extends Model
     use HasFactory;
 
     /**
+     * The "booting" method of the model.
+     *
+     * @return void
+     */
+    protected static function boot()
+    {
+        parent::boot();
+    }
+
+    /**
      * Undocumented function
      *
      * @return void
@@ -24,20 +34,20 @@ class Account extends Model
         return $this->hasMany(Order::class);
     }
 
-    public function sum_orders_per_month()
+    public function sum_orders_per_month($month = null)
     {
+        $month = $month ? $month : date('Y');
         return $this->orders()
-                ->where('month', '=', date('m'))
-                ->whereYear('created_at', '=', date('Y'))
-                ->sum(\DB::raw('price * quantity'));
+            ->where('month', '=', $month)
+            ->sum(\DB::raw('price * quantity'));
     }
 
-    public function count_orders_per_month()
+    public function count_orders_per_month($month = null)
     {
+        $month = $month ? $month : date('Y');
         return $this->orders()
-                     ->where('month', '=', date('m'))
-                     ->whereYear('created_at', date('Y'))
-                     ->count();
+            ->where('month', '=', $month)
+            ->count();
     }
 
     public function bonus()
