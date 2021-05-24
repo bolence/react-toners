@@ -78,7 +78,7 @@ class ApiOrdersController extends Controller
         return response()->json([
             'message' => 'Uspešno dodat toner',
             'order' => Order::with('printer')->latest()->first(),
-            'summary' => $this->get_summary_info(),
+            'summary' => $this->get_summary_info(date('m')),
             'errors' => [],
         ], 200);
     }

@@ -41,7 +41,8 @@ export default class Order extends Component {
             .then(response => {
                 this.setState({
                     orders: response.data.orders,
-                    orders_count: response.data.orders_count,
+                    orders_count: response.data.summary.orders_count,
+                    orders_sum: response.data.summary.orders_sum,
                     title: response.data.title
                 });
             })
@@ -69,8 +70,8 @@ export default class Order extends Component {
         axios.get("/api/orders" + searchMonth).then(response => {
             this.setState({
                 orders: response.data.orders,
-                orders_count: response.data.orders_count,
-                orders_sum: response.data.orders_sum,
+                // orders_count: response.data.summary.orders_count,
+                orders_sum: response.data.summary.orders_sum,
                 title: response.data.title,
                 currentPage: 1
             });
@@ -181,7 +182,6 @@ export default class Order extends Component {
     render() {
         const {
             orders,
-            orders_count,
             title,
             month,
             perPage,
@@ -193,10 +193,9 @@ export default class Order extends Component {
             showReminderCalendar,
             reminderDate,
             reminder_date_message,
-            automatic_copy,
             dateGreaterThan,
             error,
-            show_info
+            orders_sum
         } = this.state;
 
         const { length: count } =
@@ -291,7 +290,8 @@ export default class Order extends Component {
                     <div className="card">
                         <div className="card-header">
                             <b>
-                                {custom_title} - {orders_count} tonera
+                                {custom_title} - {orders.length} toner/a
+                                <span className={orders_sum == 0 ? 'd-none' : '' }> - vrednost {helpers.formatNumber(orders_sum) + ' RSD.'}</span>
                             </b>
                             <span className="float-right">
                                 <button className="btn btn-primary" onClick={this.handleOpenCloseModal}>
