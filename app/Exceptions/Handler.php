@@ -32,6 +32,13 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
-        //
+        $this->renderable(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, $request) {
+            if ($e->getStatusCode() == 419) {
+                return response()->json([
+                    'error' => 'token_mismatch',
+                    'message' => 'Uradite refresh stranice',
+                ]);
+            }
+        });
     }
 }

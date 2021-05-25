@@ -11,6 +11,8 @@ import { ToastContainer } from "react-toastify";
 import { Calendar } from "react-modern-calendar-datepicker";
 import { Button, Modal } from "react-bootstrap";
 import "react-modern-calendar-datepicker/lib/DatePicker.css";
+import Loader from "react-loader-spinner";
+import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 
 
 export default class Order extends Component {
@@ -33,6 +35,7 @@ export default class Order extends Component {
         automaticCopy: false,
         dateGreaterThan: false,
         show_info: false,
+        showLoader: true
     };
 
     componentDidMount() {
@@ -41,8 +44,10 @@ export default class Order extends Component {
             .then(response => {
                 this.setState({
                     orders: response.data.orders,
-                    orders_count: response.data.orders_count,
-                    title: response.data.title
+                    orders_count: response.data.summary.orders_count,
+                    orders_sum: response.data.summary.orders_sum,
+                    title: response.data.title,
+                    showLoader: false
                 });
             })
             .catch(error => {
@@ -63,16 +68,17 @@ export default class Order extends Component {
     };
 
     handleMonthChange = e => {
+
         let month = e.target.value;
-        this.setState({ month });
+        this.setState({ month, showLoader: true });
         let searchMonth = month ? "?month=" + month : "";
         axios.get("/api/orders" + searchMonth).then(response => {
             this.setState({
                 orders: response.data.orders,
-                orders_count: response.data.orders_count,
-                orders_sum: response.data.orders_sum,
+                orders_sum: response.data.summary.orders_sum,
                 title: response.data.title,
-                currentPage: 1
+                currentPage: 1,
+                showLoader: false,
             });
         });
     };
@@ -181,7 +187,6 @@ export default class Order extends Component {
     render() {
         const {
             orders,
-            orders_count,
             title,
             month,
             perPage,
@@ -193,10 +198,10 @@ export default class Order extends Component {
             showReminderCalendar,
             reminderDate,
             reminder_date_message,
-            automatic_copy,
             dateGreaterThan,
             error,
-            show_info
+            orders_sum,
+            showLoader
         } = this.state;
 
         const { length: count } =
@@ -280,6 +285,7 @@ export default class Order extends Component {
 
                     </Modal.Footer>
                 </Modal>
+
                 <div
                     className="col-md-12 col-lg-12">
                         <div className={reminder_date_message !== "" ? 'alert alert-success alert-dismissible fade show' : 'd-none'} role="alert">
@@ -291,7 +297,8 @@ export default class Order extends Component {
                     <div className="card">
                         <div className="card-header">
                             <b>
-                                {custom_title} - {orders_count} tonera
+                                {custom_title} - {orders.length} toner/a
+                                <span className={orders_sum == 0 ? 'd-none' : '' }> - vrednost {helpers.formatNumber(orders_sum) + ' RSD.'}</span>
                             </b>
                             <span className="float-right">
                                 <button className="btn btn-primary" onClick={this.handleOpenCloseModal}>
@@ -362,6 +369,9 @@ export default class Order extends Component {
                                     </button>
                                     <strong>Nema porudžbenica za traženi mesec.</strong>
                                 </div>
+                                <span className="text-center">
+                                    <Loader type="ThreeDots" color="#00BFFF" height={60} width={60} visible={showLoader} />
+                                </span>
                                 <table className={data.length > 0 ? 'table table-bordered table-striped table-hover' : 'd-none' }>
                                     <thead>
                                         <tr>

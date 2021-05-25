@@ -223,7 +223,8 @@ export default class OrderCreate extends Component {
             copiedFromLastMonth
         } = this.state;
 
-        const notEnoughMoney = last_month_orders_sum > last_month_summary;
+        const notEnoughMoney = last_month_orders_sum + orders_sum;
+        const cantOrder = notEnoughMoney > limit
 
         return (
             <div className="row">
@@ -234,15 +235,19 @@ export default class OrderCreate extends Component {
                     >
                         <Modal.Title>
                             Porudžbenica iz prošlog meseca - {helpers.formatNumber(last_month_orders_sum)} RSD
+
                         </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        <div className={notEnoughMoney ? 'alert alert-danger alert-dismissible fade show' : 'd-none' } role="alert">
+                        <div className={ cantOrder ? 'alert alert-danger alert-dismissible fade show' : 'd-none' } role="alert">
                             <button type="button" className="close" data-dismiss="alert" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                                 <span className="sr-only">Close</span>
                             </button>
-                            <strong>Porudžbenica iz prošlog meseca je veća nego vaš limit.</strong>
+                            <strong>Kopiranjem porudžbenice iz prošlog meseca nije moguće jer premašuje vaš limit {" "}
+                                <b>{helpers.formatNumber(limit)} RSD.</b><br />
+                                Izbrišite trenutne tonere iz porudžbenice i dodajte samo tonere iz prošlog meseca.
+                            </strong>
                         </div>
                         {lastMonthOrders.length > 0 ?
 
@@ -285,7 +290,7 @@ export default class OrderCreate extends Component {
                         </Button>
                         <Button
                             variant="primary"
-                            className={lastMonthOrders.length == 0 || notEnoughMoney ? 'd-none' : '' }
+                            className={lastMonthOrders.length == 0 || cantOrder ? 'd-none' : '' }
                             onClick={() => this.copyOrderFromLastMonth()}
                         >
                             Kopiraj porudžbenicu
@@ -430,7 +435,7 @@ export default class OrderCreate extends Component {
                                         {
                                         (summary - orders_sum) - amount > 0
                                         ? 'Preostali limit će biti: ' + helpers.formatNumber((summary - orders_sum) - amount)
-                                        : 'Nemate dovoljno sredstava za ovaj toner!!!'
+                                        : 'Vaš limit je manji od cene ovog tonera!!!'
                                         }
 
                                   </span>
