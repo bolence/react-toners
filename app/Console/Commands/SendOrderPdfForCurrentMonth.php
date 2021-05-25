@@ -3,8 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\Order;
-use App\Notifications\PdfOrder;
+use Illuminate\Support\Str;
 use App\Services\PDFCreator;
+use App\Notifications\PdfOrder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -42,8 +43,10 @@ class SendOrderPdfForCurrentMonth extends Command
     public function handle()
     {
 
-        $orders = Order::with('user')->whereMonth('created_at', '=', date('m'))
-            ->get();
+        $orders = Order::with('user.account')
+        ->whereMonth('created_at', '=', date('m'))
+        ->groupBy('account_id')
+        ->get();
 
         if (!$orders) {
             return;

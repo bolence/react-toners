@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use App\Scopes\YearScope;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Order extends Model
 {
@@ -65,7 +66,7 @@ class Order extends Model
         $month = (int) $month == null ? date('m') : $month;
         return $this->where('account_id', '=', $this->account_id)
             ->where('month', '=', $month)
-            ->sum(\DB::raw('price * quantity'));
+            ->sum(DB::raw('price * quantity'));
     }
 
     public static function get_count_of_orders()

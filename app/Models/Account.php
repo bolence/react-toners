@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Account extends Model
 {
@@ -39,7 +40,7 @@ class Account extends Model
         $month = $month ? $month : date('Y');
         return $this->orders()
             ->where('month', '=', $month)
-            ->sum(\DB::raw('price * quantity'));
+            ->sum(DB::raw('price * quantity'));
     }
 
     public function count_orders_per_month($month = null)

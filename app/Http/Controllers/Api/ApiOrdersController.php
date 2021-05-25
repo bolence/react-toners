@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\CreateNewOrder;
-use App\Models\Account;
-use App\Models\CopiedOrder;
+use Exception;
+use Carbon\Carbon;
 use App\Models\Order;
+use App\Models\Account;
 use App\Models\Printer;
 use App\Traits\Financial;
-use Auth;
-use Carbon\Carbon;
-use Exception;
+use App\Models\CopiedOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\CreateNewOrder;
 
 class ApiOrdersController extends Controller
 {

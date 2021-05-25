@@ -32,13 +32,12 @@ tr {
 <div class="col-md-10">
     <?php $sum = 0; ?>
     <h3 style="text-align: center; margin: 0 auto; padding: 30px; font-weight: bolder; font-style: 'Helvetica';">
-        Spisak poručenih tonera {{ date('m') }}.mesec {{ date('Y') }}.godina
+        Spisak poručenih tonera za službu <b>{{ $user->account->sluzba }}</b> {{ date('m') }}.{{ date('Y') }}
     </h3>
   <table class="table table-bordered table-striped" border="1" cellpadding="2" cellspacing="2">
       <thead>
         <tr bgcolor="#fdb817">
           <th scope="col">Poručio</th>
-          <th scope="col">Služba</th>
           <th scope="col">Štampač</th>
           <th scope="col">Toner</th>
           <th scope="col">Količina</th>
@@ -53,7 +52,6 @@ tr {
         <?php $sum += $order->printer->price * $order->quantity; ?>
         <tr>
           <td style="font-size: 15px; font-weight: bold;">{{ $order->user->name }}</td>
-          <td style="font-size: 15px; font-weight: bold;">{{ $order->user->account->sluzba }}</td>
           <td style="font-size: 15px; font-weight: bold;">{{ $order->printer->name }}</td>
           <td style="font-size: 15px; font-weight: bold;">{{ $order->printer->catridge }}</td>
           <td style="font-size: 15px; font-weight: bold;">{{ $order->quantity }}</td>
@@ -65,7 +63,7 @@ tr {
         @endforeach
 
         <tr>
-            <td colspan="6"></td>
+            <td colspan="5"></td>
             <td style="font-size: 15px; font-weight: bold;pApi">Okvirno za plaćanje:</td>
             <td style="font-size: 15px; font-weight: bold;">{{ number_format($sum,2) }} RSD.</td>
           </tr>
