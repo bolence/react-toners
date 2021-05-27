@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers\Api;
 
-use Exception;
-use Carbon\Carbon;
-use App\Models\Order;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\CreateNewOrder;
 use App\Models\Account;
+use App\Models\CopiedOrder;
+use App\Models\Order;
 use App\Models\Printer;
 use App\Traits\Financial;
-use App\Models\CopiedOrder;
+use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\CreateNewOrder;
 
 class ApiOrdersController extends Controller
 {
@@ -30,26 +30,18 @@ class ApiOrdersController extends Controller
 
         $orders = Order::with('account', 'printer')
             ->when($month, function ($q) use ($user, $month) {
-                if ($user->isAdmin()) {
-                    $q->whereRaw('MONTH(created_at) = ' . $month);
-                } else {
-                    $q->where('account_id', '=', $user->account_id)
-                        ->whereRaw('MONTH(created_at) = ' . $month);
-                }
+                $q->where('account_id', '=', $user->account_id)
+                    ->whereRaw('MONTH(created_at) = ' . $month);
             })->orderBy('id', 'desc')
             ->get();
 
         $copied = CopiedOrder::where('account_id', '=', $user->account_id)->whereMonth('created_at', '=', date('m'))->exists();
 
-        $title = $user->isAdmin()
-        ? "Poručeni toneri sve službe u $month.$year."
-        : "Poručeni toneri za " . $user->account->sluzba . "$month.$year.";
-
         return response()->json([
             'orders' => $orders,
             'orders_count' => $orders->count(),
             'count_toners' => $orders->sum('quantity'),
-            'title' => $title,
+            'title' => "Poručeni toneri za " . $user->account->sluzba . " $month.$year.",
             'summary' => $this->get_summary_info($month),
             'copied' => $copied,
         ], 200);

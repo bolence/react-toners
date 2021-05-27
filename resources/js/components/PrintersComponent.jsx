@@ -356,7 +356,7 @@ export default class Printers extends Component {
                                             </td>
 
                                             <td>
-                                                <a
+                                                <a style={{cursor : 'pointer'}}
                                                     onClick={() =>
                                                         this.handleModalShowHide(
                                                             printer
@@ -371,7 +371,7 @@ export default class Printers extends Component {
                                                     ></i>
                                                 </a>
                                                 &nbsp;
-                                                <a
+                                                <a style={{ cursor: 'pointer' }}
                                                     onClick={() =>
                                                         confirm('Da li želiš da izbrišeš ovaj toner?')
                                                         && this.deletePrinter(printer)
