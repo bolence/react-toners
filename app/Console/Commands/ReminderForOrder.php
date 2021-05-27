@@ -52,12 +52,16 @@ class ReminderForOrder extends Command
             $accounts[] = $order->account->id;
         }
 
-        $users = User::whereNotIn('account_id', $accounts)
-            ->groupBy('account_id')
-            ->get();
+        if (count($accounts) > 0) {
+            $users = User::whereNotIn('account_id', $accounts)
+                ->groupBy('account_id')
+                ->get();
+        }
 
-        foreach ($users as $user) {
-            $user->notify(new ReminderForOrderNotification($user));
+        if (isset($users) && count($users) > 0) {
+            foreach ($users as $user) {
+                $user->notify(new ReminderForOrderNotification($user));
+            }
         }
 
         Log::info('Podsetnik poslat na ' . count($users) . ' mejl adresa');

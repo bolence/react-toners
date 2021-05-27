@@ -35,7 +35,8 @@ export default class Order extends Component {
         automaticCopy: false,
         dateGreaterThan: false,
         show_info: false,
-        showLoader: true
+        showLoader: true,
+        count_toners: 0,
     };
 
     componentDidMount() {
@@ -47,6 +48,7 @@ export default class Order extends Component {
                     orders_count: response.data.summary.orders_count,
                     orders_sum: response.data.summary.orders_sum,
                     title: response.data.title,
+                    count_toners: response.data.count_toners,
                     showLoader: false
                 });
             })
@@ -79,6 +81,7 @@ export default class Order extends Component {
                 title: response.data.title,
                 currentPage: 1,
                 showLoader: false,
+                count_toners: response.data.count_toners,
             });
         });
     };
@@ -201,7 +204,8 @@ export default class Order extends Component {
             dateGreaterThan,
             error,
             orders_sum,
-            showLoader
+            showLoader,
+            count_toners
         } = this.state;
 
         const { length: count } =
@@ -215,10 +219,6 @@ export default class Order extends Component {
             defaultPerPage
         );
 
-        const custom_title =
-            month == "all"
-                ? "Toneri za sve službe u " + (moment().month() + 1) + '.' + moment().year() + ".godini"
-                : title;
 
         return (
             <div className="row">
@@ -297,7 +297,7 @@ export default class Order extends Component {
                     <div className="card">
                         <div className="card-header">
                             <b>
-                                {custom_title} - {orders.length} toner/a
+                                {title} - {count_toners} toner/a
                                 <span className={orders_sum == 0 ? 'd-none' : '' }> - vrednost {helpers.formatNumber(orders_sum) + ' RSD.'}</span>
                             </b>
                             <span className="float-right">
@@ -334,9 +334,6 @@ export default class Order extends Component {
                                                 className="form-control"
                                             >
                                                 <option>Izaberi mesec</option>
-                                                <option value="all">
-                                                    Sve službe
-                                                </option>
                                                 {_.range(1, 12 + 1).map(m => (
                                                     <option
                                                         key={m}

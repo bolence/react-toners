@@ -29,21 +29,27 @@ class ApiOrdersController extends Controller
         $month = $request->month ? $request->month : date('m');
 
         $orders = Order::with('account', 'printer')
-            ->when($month !== 'all', function ($q) use ($user, $month) {
-                $q->where('account_id', '=', $user->account_id)->whereRaw('MONTH(created_at) = ' . $month);
-            })->whereYear('created_at', '=', $year)
-            ->when($month == 'all', function ($q) {
-                $q->where('month', '=', date('m'));
-            })
-            ->orderBy('id', 'desc')
+            ->when($month, function ($q) use ($user, $month) {
+                if ($user->isAdmin()) {
+                    $q->whereRaw('MONTH(created_at) = ' . $month);
+                } else {
+                    $q->where('account_id', '=', $user->account_id)
+                        ->whereRaw('MONTH(created_at) = ' . $month);
+                }
+            })->orderBy('id', 'desc')
             ->get();
 
         $copied = CopiedOrder::where('account_id', '=', $user->account_id)->whereMonth('created_at', '=', date('m'))->exists();
 
+        $title = $user->isAdmin()
+        ? "Poručeni toneri sve službe u $month.$year."
+        : "Poručeni toneri za " . $user->account->sluzba . "$month.$year.";
+
         return response()->json([
             'orders' => $orders,
             'orders_count' => $orders->count(),
-            'title' => "Poručeni toneri " . $user->sluzba . " u $year.godini",
+            'count_toners' => $orders->sum('quantity'),
+            'title' => $title,
             'summary' => $this->get_summary_info($month),
             'copied' => $copied,
         ], 200);
