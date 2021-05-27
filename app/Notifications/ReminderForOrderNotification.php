@@ -46,7 +46,7 @@ class ReminderForOrderNotification extends Notification
             ->greeting('Dobro jutro!')
             ->subject('Podsetnik za unos tonera za trenutni mesec')
             ->line('Ovo je podsetnik da nista uneli tonere za ovaj mesec. Uradite to što pre.')
-            ->action('Poručite toneri', url('/'))
+            ->action('Poručite tonere', url('/'))
             ->line('Hvala vam što koristite aplikaciju!');
     }
 

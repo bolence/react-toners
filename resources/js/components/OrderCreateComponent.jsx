@@ -435,7 +435,7 @@ export default class OrderCreate extends Component {
                                         {
                                         (summary - orders_sum) - amount > 0
                                         ? 'Preostali limit će biti: ' + helpers.formatNumber((summary - orders_sum) - amount)
-                                        : 'Vaš limit je manji od cene ovog tonera!!!'
+                                        : 'Vaš preostali limit je manji od cene ovog tonera!!!'
                                         }
 
                                   </span>
