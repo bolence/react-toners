@@ -1,12 +1,10 @@
 <?php
 
+namespace App\Traits;
+
 use Illuminate\Support\Facades\Auth;
-
-  namespace App\Traits;
-  use Auth;
-
-  trait Financial
-  {
+trait Financial
+{
 
     public function get_limit()
     {
@@ -15,18 +13,23 @@ use Illuminate\Support\Facades\Auth;
 
     public function get_bonus()
     {
-        return Auth::user()->account->bonus ? (int) Auth::user()->account->bonus[0]->bonus : 0;
+        $has_bonus = count(Auth::user()->account->bonus) > 0;
+        return $has_bonus ? (int) Auth::user()->account->bonus[0]->bonus : 0;
     }
 
-    public function get_orders_sum()
+    public function get_orders_count()
     {
-        return Auth::user()->account->sum_orders_per_month();
+        return Auth::user()->account->count_orders_per_month();
     }
 
-    public function get_summary()
+    public function get_orders_sum($month = null)
     {
-        return (int) ($this->get_limit() + $this->get_bonus()) - $this->get_orders_sum();
+        return (int) Auth::user()->account->sum_orders_per_month($month);
     }
 
+    public function get_summary($month = null)
+    {
+        return (int) ($this->get_limit() + $this->get_bonus()) - $this->get_orders_sum($month);
+    }
 
-  }
+}

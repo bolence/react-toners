@@ -2,15 +2,15 @@ import React, { Component } from "react";
 
 const Pagination = props => {
     const { itemsCount, pageSize, onPageChange, currentPage } = props;
-
     const pagesCount = Math.ceil(itemsCount / pageSize);
+
     if (pagesCount === 1) return null;
     const pages = _.range(1, pagesCount + 1);
 
     return (
         <React.Fragment>
             <div className="row mt-3">
-                <div className="col-auto mr-auto mt-2">
+                <div className={pagesCount > 1 ? 'col-auto mr-auto mt-2' : 'd-none' }>
                 <span className="badge badge-success" style={{ fontSize: 15 }}>
                     Prikazujem {pageSize} redova od ukupno {itemsCount} redova | Strana: {currentPage}
                 </span>

@@ -2,12 +2,35 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Scopes\YearScope;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Order extends Model
 {
     use HasFactory;
+
+    /**
+     * The "booting" method of the model.
+     *
+     * @return void
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        static::addGlobalScope(new YearScope);
+
+    }
+
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'copied' => 'boolean',
+    ];
 
     /**
      * The attributes that aren't mass assignable.
@@ -42,7 +65,22 @@ class Order extends Model
     {
         $month = (int) $month == null ? date('m') : $month;
         return $this->where('account_id', '=', $this->account_id)
-                     ->where('month', '=', $month)
-                     ->sum(\DB::raw('price * quantity'));
+            ->where('month', '=', $month)
+            ->sum(DB::raw('price * quantity'));
     }
+
+    public static function get_count_of_orders()
+    {
+        return self::whereRaw('MONTH(created_at) = ' . date('m'))
+            ->count() > 0;
+    }
+
+    public static function current_month_order($account_id)
+    {
+        return self::with('printer', 'account')
+            ->whereMonth('created_at', '=', date('m'))
+            ->where('account_id', '=', $account_id)
+            ->get();
+    }
+
 }

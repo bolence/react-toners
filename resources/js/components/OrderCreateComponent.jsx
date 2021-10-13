@@ -6,6 +6,7 @@ import { ToastContainer } from "react-toastify";
 import helpers from "./commons/Helpers";
 import Moment from "react-moment";
 import NumberFormat from "react-number-format";
+import { Button, Modal } from "react-bootstrap";
 
 export default class OrderCreate extends Component {
     state = {
@@ -22,16 +23,21 @@ export default class OrderCreate extends Component {
         bonus: 0,
         orders_sum: 0,
         limit: 0,
-        summary: 0
+        summary: 0,
+        previousMonthOrders: {},
+        showPreviousMonthOrder: false,
+        lastMonthOrders: {},
+        copiedFromLastMonth: false
     };
 
     handleSubmit = e => {
         e.preventDefault();
 
-        const { quantity, printer } = this.state;
+        const { quantity, printer, napomena } = this.state;
 
         let data = {
             quantity,
+            napomena,
             printer: printer ? printer.value : ""
         };
         axios
@@ -55,6 +61,7 @@ export default class OrderCreate extends Component {
                 });
             })
             .catch(error => {
+                this.setState({ errors: error.response.data.errors });
                 helpers.notify(error.response.data.message, true);
             });
     };
@@ -67,19 +74,23 @@ export default class OrderCreate extends Component {
 
     onSelectChange = (value, action) => {
         let id = value.value;
-
         axios.get("/api/printers/" + id).then(response => {
             this.setState({
                 catrigde: response.data.catridge,
                 printer: value,
-                price: response.data.price
+                price: response.data.price,
+                errors: ""
             });
         });
     };
 
     handleQuantityChange = e => {
         let quantity = e.target.value;
-        this.setState({ amount: this.state.price * quantity, quantity });
+        this.setState({
+            amount: this.state.price * quantity,
+            quantity,
+            errors: ""
+        });
     };
 
     componentDidMount() {
@@ -115,11 +126,12 @@ export default class OrderCreate extends Component {
                     bonus: response.data.summary.bonus,
                     limit: response.data.summary.limit,
                     orders_sum: response.data.summary.orders_sum,
-                    summary: response.data.summary.summary
+                    summary: response.data.summary.summary,
+                    copiedFromLastMonth: response.data.copied
                 });
             })
             .catch(error => {
-                helpers.notify(error.data.message);
+                helpers.notify(error.response.data.message, true);
             });
     };
 
@@ -145,7 +157,51 @@ export default class OrderCreate extends Component {
             });
     };
 
+    repeatOrderFromPreviousMonth = (e) => {
+        e.preventDefault();
+        const date = new Date();
+        const previousMonth = date.getMonth();
+        axios.get('/api/orders?month=' + previousMonth).then( response => {
+            this.setState({
+                previousMonthOrders: response.data,
+                showPreviousMonthOrder: true,
+                lastMonthOrders: response.data.orders,
+                last_month_orders_sum: response.data.summary.orders_sum,
+                last_month_summary: response.data.summary.summary,
+
+            });
+        }).catch( error => {
+
+        });
+    };
+
+    handleOpenCloseModal = () => {
+        this.setState({
+            showPreviousMonthOrder: ! this.state.showPreviousMonthOrder,
+        });
+    };
+
+    copyOrderFromLastMonth = () => {
+        axios.get('/api/orders/copy_orders').then( response => {
+            helpers.notify(response.data.message);
+            this.setState({
+                orders : response.data.orders,
+                showPreviousMonthOrder: false,
+                bonus: response.data.summary.bonus,
+                limit: response.data.summary.limit,
+                orders_sum: response.data.summary.orders_sum,
+                summary: response.data.summary.summary,
+                copiedFromLastMonth: response.data.copied,
+
+            });
+
+        }).catch( error => {
+            helpers.notify(error.response.data.message, true);
+        });
+    };
+
     render() {
+
         const {
             printer,
             catrigde,
@@ -158,11 +214,89 @@ export default class OrderCreate extends Component {
             bonus,
             limit,
             orders_sum,
-            summary
+            summary,
+            price,
+            showPreviousMonthOrder,
+            lastMonthOrders,
+            last_month_orders_sum,
+            last_month_summary,
+            copiedFromLastMonth
         } = this.state;
+
+        const notEnoughMoney = last_month_orders_sum + orders_sum;
+        const cantOrder = notEnoughMoney > limit
 
         return (
             <div className="row">
+                 <Modal show={showPreviousMonthOrder} size="lg">
+                    <Modal.Header
+                        closeButton
+                        onClick={() => this.handleOpenCloseModal()}
+                    >
+                        <Modal.Title>
+                            Porudžbenica iz prošlog meseca - {helpers.formatNumber(last_month_orders_sum)} RSD
+
+                        </Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <div className={ cantOrder ? 'alert alert-danger alert-dismissible fade show' : 'd-none' } role="alert">
+                            <button type="button" className="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                                <span className="sr-only">Close</span>
+                            </button>
+                            <strong>Kopiranjem porudžbenice iz prošlog meseca nije moguće jer premašuje vaš limit {" "}
+                                <b>{helpers.formatNumber(limit)} RSD.</b><br />
+                                Izbrišite trenutne tonere iz porudžbenice i dodajte samo tonere iz prošlog meseca.
+                            </strong>
+                        </div>
+                        {lastMonthOrders.length > 0 ?
+
+                        <table className="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Štampač</th>
+                                    <th>Ketridž</th>
+                                    <th>Količina</th>
+                                    <th>Cena</th>
+                                    <th>Kreirano</th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                    { lastMonthOrders.map( order =>
+                                    <tr key={order.id}>
+                                        <td scope="row">{order.printer.name}</td>
+                                        <td>{order.printer.catridge}</td>
+                                        <td>{order.quantity}</td>
+                                        <td>{order.price * order.quantity}</td>
+                                        <td>{new Date(order.created_at).toLocaleDateString()}</td>
+                                    </tr>
+                                    )}
+                                </tbody>
+                        </table> :
+                        <div className="alert alert-info alert-dismissible fade show" role="alert">
+                          <button type="button" className="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                          <strong> Nemate porudžbine za prošli mesec.</strong>
+                        </div>}
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button
+                            variant="secondary"
+                            onClick={() => this.handleOpenCloseModal()}
+                        >
+                            Zatvori
+                        </Button>
+                        <Button
+                            variant="primary"
+                            className={lastMonthOrders.length == 0 || cantOrder ? 'd-none' : '' }
+                            onClick={() => this.copyOrderFromLastMonth()}
+                        >
+                            Kopiraj porudžbenicu
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
                 <div className="col-12">
                     <div
                         className="alert alert-primary alert-dismissible fade show"
@@ -179,10 +313,25 @@ export default class OrderCreate extends Component {
                         </button>
                         <strong>
                             Trenutni limit: {helpers.formatNumber(limit)}.
-                            Bonus: {helpers.formatNumber(bonus)}.
-                            Preostalo za ovaj mesec: {helpers.formatNumber(summary)}
+                            Bonus: {helpers.formatNumber(bonus)}. Preostalo za
+                            ovaj mesec: {helpers.formatNumber(summary - orders_sum)}
                         </strong>
                     </div>
+                </div>
+
+                <div className={!copiedFromLastMonth ? 'col-12' : 'd-none' }>
+                <div
+                        className="alert alert-secondary"
+                        role="alert"
+                    >
+                        <strong>
+                        Ako želite da ponovite prošlu nabavku, kliknite
+                        <a href="" onClick={this.repeatOrderFromPreviousMonth}>
+                        {" "} ovde.
+                        </a>
+                        </strong>
+                    </div>
+
                 </div>
 
                 <ToastContainer />
@@ -196,6 +345,15 @@ export default class OrderCreate extends Component {
                                 acceptCharset="utf-8"
                                 onSubmit={this.handleSubmit}
                             >
+                                <div className={errors.length > 0 ? 'alert alert-danger alert-dismissible fade show' : 'd-none'} role="alert">
+                                    <button type="button" className="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                        <span className="sr-only">Close</span>
+                                    </button>
+                                   {errors.lenght > 0 && errors.map(error => (
+                                       <p>{error}</p>
+                                   ))}
+                                </div>
                                 <div className="form-group">
                                     <label htmlFor="printer">Štampač</label>
                                     <Select
@@ -225,6 +383,13 @@ export default class OrderCreate extends Component {
                                         disabled={true}
                                         onChange={this.handleInputChange}
                                     />
+                                    <span
+                                        className={
+                                            printer ? "text-info" : "d-none"
+                                        }
+                                    >
+                                        Cena ovog tonera je: {helpers.formatNumber(price)}
+                                    </span>
                                 </div>
 
                                 <div className="form-group">
@@ -266,7 +431,16 @@ export default class OrderCreate extends Component {
                                         className="form-control"
                                         disabled={true}
                                     />
+                                    <span className={quantity ? 'text-danger font-weight-bold' : 'd-none'}>
+                                        {
+                                        (summary - orders_sum) - amount > 0
+                                        ? 'Preostali limit će biti: ' + helpers.formatNumber((summary - orders_sum) - amount)
+                                        : 'Vaš preostali limit je manji od cene ovog tonera!!!'
+                                        }
+
+                                  </span>
                                 </div>
+
                                 <div className="form-group">
                                     <label htmlFor="napomena">Napomena</label>
                                     <textarea
@@ -278,12 +452,15 @@ export default class OrderCreate extends Component {
                                         onChange={this.handleInputChange}
                                     ></textarea>
                                 </div>
+
                                 <div className="form-group float-right">
-                                    <input
+                                    <button
                                         type="submit"
-                                        className="btn btn-primary"
-                                        value="Snimi"
-                                    />
+                                        disabled={(summary - orders_sum) - amount < 0}
+                                        className='btn btn-primary'
+                                    >
+                                        Snimi porudžbenicu
+                                    </button>
                                 </div>
                             </form>
                         </div>
@@ -293,7 +470,9 @@ export default class OrderCreate extends Component {
                 <div className="col-6">
                     <div className="card">
                         <div className="card-header">
-                            Poručeno u ovom mesecu - {helpers.formatNumber(orders_sum) } ({orders.length})
+                            Poručeno u ovom mesecu
+                            <span className={orders.length == 0 ? 'd-none' : ''}>-{" "}
+                            {helpers.formatNumber(orders_sum)} ({orders.length + " toner/a"} )</span>
                         </div>
 
                         <div className="card-body">
@@ -328,6 +507,13 @@ export default class OrderCreate extends Component {
                                         <tr key={order.id}>
                                             <td scope="row">
                                                 {order.printer.name}
+                                            <a title="Kopirano iz prošle porudžbenice" className={
+                                               ! order.copied
+                                                ? 'd-none'
+                                                : ''
+                                                }>
+                                            <i className="fa fa-question-circle float-right text-danger font-weight-bold" ></i>
+                                            </a>
                                             </td>
                                             <td>{order.printer.catridge}</td>
                                             <td>{order.quantity}</td>
@@ -347,9 +533,9 @@ export default class OrderCreate extends Component {
                                                 </Moment>
                                             </td>
                                             <td>
-                                                <a
+                                                <a style={{ cursor: "pointer" }}
                                                     onClick={() =>
-                                                        this.deleteCatridgeFromOrder(
+                                                        confirm('Da li želiš da izbrišeš ovaj toner?') && this.deleteCatridgeFromOrder(
                                                             order
                                                         )
                                                     }

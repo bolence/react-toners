@@ -5,8 +5,14 @@ import NumberFormat from "react-number-format";
 import Moment from "react-moment";
 import Pagination from "./commons/Pagination";
 import { paginate } from "./functions/paginate";
-import helpers from './commons/Helpers';
+import helpers from "./commons/Helpers";
+import moment from "moment";
 import { ToastContainer } from "react-toastify";
+import { Calendar } from "react-modern-calendar-datepicker";
+import { Button, Modal } from "react-bootstrap";
+import "react-modern-calendar-datepicker/lib/DatePicker.css";
+import Loader from "react-loader-spinner";
+import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 
 
 export default class Order extends Component {
@@ -14,24 +20,36 @@ export default class Order extends Component {
         orders: [],
         orders_count: 0,
         title: "",
-        month: "",
+        month: moment().month() + 1,
         defaultPerPage: 10,
         currentPage: 1,
         searchKeyword: "",
         perPage: [10, 20, 50, 100, 500, 1000, 5000],
         user: helpers.getUser(),
         orders_sum: 0,
+        filteredData: [],
+        user: helpers.getUser(),
+        showReminderCalendar: false,
+        reminderDate: null,
+        reminder_date_message: "",
+        automaticCopy: false,
+        dateGreaterThan: false,
+        show_info: false,
+        showLoader: true,
+        count_toners: 0,
     };
 
     componentDidMount() {
-
         axios
-            .get("/api/orders")
+            .get("/api/orders?month=" + this.state.month)
             .then(response => {
                 this.setState({
                     orders: response.data.orders,
-                    orders_count: response.data.orders_count,
-                    title: response.data.title
+                    orders_count: response.data.summary.orders_count,
+                    orders_sum: response.data.summary.orders_sum,
+                    title: response.data.title,
+                    count_toners: response.data.count_toners,
+                    showLoader: false
                 });
             })
             .catch(error => {
@@ -47,54 +65,131 @@ export default class Order extends Component {
         this.setState({ currentPage: page });
     };
 
-
     handlePageSizeChange = e => {
         this.setState({ defaultPerPage: e.target.value, currentPage: 1 });
     };
 
     handleMonthChange = e => {
-        this.setState({ month: e.target.value });
-        let searchMonth = e.target.value ? "?month=" + e.target.value : "";
+
+        let month = e.target.value;
+        this.setState({ month, showLoader: true });
+        let searchMonth = month ? "?month=" + month : "";
         axios.get("/api/orders" + searchMonth).then(response => {
             this.setState({
                 orders: response.data.orders,
-                orders_count: response.data.orders_count,
-                orders_sum: response.data.orders_sum,
+                orders_sum: response.data.summary.orders_sum,
                 title: response.data.title,
-                currentPage: 1
+                currentPage: 1,
+                showLoader: false,
+                count_toners: response.data.count_toners,
             });
         });
     };
 
     handleSearch = e => {
-        let searchKeyword = e.target.value;
-        let orders = [...this.state.orders];
-        orders = orders.filter(order => {
+        let search = e.target.value;
+        let filteredData = [];
+        const { orders } = this.state;
+
+        filteredData = orders.filter(order => {
             let catridge = order.printer.catridge.toLowerCase();
-            return catridge.indexOf(searchKeyword.toLowerCase()) !== -1;
+            let printer = order.printer.name.toLowerCase();
+            return (
+                catridge.indexOf(search.toLowerCase()) !== -1 ||
+                printer.indexOf(search.toLowerCase()) !== -1
+            );
         });
 
         this.setState({
-            orders,
-            searchKeyword,
-            orders_count: orders.length
+            filteredData,
+            searchKeyword: search,
+            currentPage: 1,
+            orders_count: filteredData.length
         });
     };
 
     deleteCatridgeFromOrder = order => {
-        helpers.notify('Uspešno izbrisano', null);
         const orders = [...this.state.orders];
         const deleted = orders.filter(o => o.id !== order.id);
+
+        axios
+            .delete("/api/orders/" + order.id)
+            .then(response => {
+                helpers.notify(response.data.message);
+                this.setState({
+                    orders: deleted,
+                    orders_count: response.data.summary.orders_count
+                });
+            })
+            .catch(error => {
+                helpers.notify(error.response.data.message, true);
+            });
+    };
+
+    handleOpenCloseModal = () => {
         this.setState({
-            orders: deleted
+            showReminderCalendar: ! this.state.showReminderCalendar,
+        });
+    };
+
+    calendarChanged = (date) => {
+        let today = moment();
+        let selected_date = moment(date).subtract(1, 'month');
+
+        if(selected_date < today)
+        {
+            this.setState({
+                dateGreaterThan: true,
+            });
+        }
+        else {
+            this.setState({
+                dateGreaterThan: false,
+            })
+        }
+        this.setState({
+            reminderDate: date
         });
 
+    }
+
+    handleChangeCheckbox = () => {
+        this.setState({
+            automaticCopy: !this.state.automaticCopy,
+            show_info: !this.state.show_info
+        });
+    }
+
+    saveOrderReminder = () => {
+
+        let data = {
+            reminder_date: moment(this.state.reminderDate).subtract(1, 'month').format('YYYY-MM-DD'),
+            automatic_copy: this.state.automaticCopy
+        }
+
+        if(data.reminder_date == 'Invalid date') {
+            helpers.notify('Datum nije izabran! Datum je obavezan!', true);
+            return;
+        }
+
+        axios.post('/api/reminders', data).then( response => {
+            this.setState({
+                showReminderCalendar: false,
+                reminder_date_message: response.data.reminder_date_message
+            });
+        }).catch( error => {
+            this.setState({
+                showReminderCalendar: false,
+                error: error.response.data.errors[0]
+            });
+
+            helpers.notify( error.response.data.message, true);
+        });
     };
 
     render() {
         const {
             orders,
-            orders_count,
             title,
             month,
             perPage,
@@ -102,25 +197,114 @@ export default class Order extends Component {
             currentPage,
             searchKeyword,
             user,
+            filteredData,
+            showReminderCalendar,
+            reminderDate,
+            reminder_date_message,
+            dateGreaterThan,
+            error,
             orders_sum,
+            showLoader,
+            count_toners
         } = this.state;
 
-        const { length: count } = this.state.orders;
+        const { length: count } =
+            this.state.filteredData.length > 0
+                ? filteredData
+                : this.state.orders;
 
-        const data = paginate(orders, currentPage, defaultPerPage);
+        const data = paginate(
+            filteredData.length > 0 ? filteredData : orders,
+            currentPage,
+            defaultPerPage
+        );
 
 
         return (
             <div className="row">
                 <ToastContainer />
-                <div className="col-md-12 col-lg-12">
+
+                <Modal show={showReminderCalendar} onHide={() => this.handleOpenCloseModal()}>
+                    <Modal.Header
+                        closeButton
+                        onClick={() => this.handleOpenCloseModal()}
+                    >
+                        <Modal.Title>
+                            Izaberite datum automatskog kopiranja
+                        </Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+
+                    <div className="alert alert-primary alert-dismissible fade show" role="alert">
+                                <button type="button" className="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                    <span className="sr-only">Close</span>
+                                </button>
+                                <strong>Vaša porudžbenica iz prošlog meseca će biti kopirana kao porudžbenica za ovaj mesec. Radnja će biti izvršena na izabrani datum.</strong>
+                            </div>
+
+                        <div className={dateGreaterThan ? 'alert alert-danger alert-dismissible fade show' : 'd-none'} role="alert">
+                            <button type="button" className="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                                <span className="sr-only">Close</span>
+                            </button>
+                            <strong>Izabrali ste datum u prošlosti!</strong>
+                        </div>
+
+                        <Calendar
+                        onChange={this.calendarChanged}
+                        value={reminderDate}
+                        width={1000}
+                        shouldHighlightWeekends
+                        />
+                        <br/>
+                        <span className={error ? 'text-danger' : ''}>
+                            {error}
+                        </span>
+                        {/* <span>
+                            <input type="checkbox" onChange={this.handleChangeCheckbox} value={automatic_copy}/>
+                            {" "} Automatsko kopiranje porudžbenice iz prošlog meseca */}
+
+                        {/* </span> */}
+
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button
+                            variant="secondary"
+                            onClick={() => this.handleOpenCloseModal()}
+                        >
+                            Zatvori
+                        </Button>
+                        <Button
+                            variant="primary"
+                            disabled={dateGreaterThan}
+                            onClick={() => this.saveOrderReminder()}
+                        >
+                            Snimi podsetnik
+                        </Button>
+
+                    </Modal.Footer>
+                </Modal>
+
+                <div
+                    className="col-md-12 col-lg-12">
+                        <div className={reminder_date_message !== "" ? 'alert alert-success alert-dismissible fade show' : 'd-none'} role="alert">
+                        <button type="button" className="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <strong>{reminder_date_message}</strong>
+                        </div>
                     <div className="card">
                         <div className="card-header">
                             <b>
-                                {title} - {orders_count} tonera{" "}
-                                {month ? "- " + month + ".mesec" : ""}
-                                {/* {orders_sum} */}
+                                {title} - {count_toners} toner/a
+                                <span className={orders_sum == 0 ? 'd-none' : '' }> - vrednost {helpers.formatNumber(orders_sum) + ' RSD.'}</span>
                             </b>
+                            <span className="float-right">
+                                <button className="btn btn-primary" onClick={this.handleOpenCloseModal}>
+                                    <i className="fa fa-calendar"></i> Automatsko kopiranje
+                                </button>
+                            </span>
                         </div>
                         <div className="card-body">
                             <div className="row mb-2">
@@ -150,43 +334,15 @@ export default class Order extends Component {
                                                 className="form-control"
                                             >
                                                 <option>Izaberi mesec</option>
-                                                <option value="">Sve</option>
-                                                <option value="1">
-                                                    1.mesec
-                                                </option>
-                                                <option value="2">
-                                                    2.mesec
-                                                </option>
-                                                <option value="3">
-                                                    3.mesec
-                                                </option>
-                                                <option value="4">
-                                                    4.mesec
-                                                </option>
-                                                <option value="5">
-                                                    5.mesec
-                                                </option>
-                                                <option value="6">
-                                                    6.mesec
-                                                </option>
-                                                <option value="7">
-                                                    7.mesec
-                                                </option>
-                                                <option value="8">
-                                                    8.mesec
-                                                </option>
-                                                <option value="9">
-                                                    9.mesec
-                                                </option>
-                                                <option value="10">
-                                                    10.mesec
-                                                </option>
-                                                <option value="11">
-                                                    11.mesec
-                                                </option>
-                                                <option value="12">
-                                                    12.mesec
-                                                </option>
+                                                {_.range(1, 12 + 1).map(m => (
+                                                    <option
+                                                        key={m}
+                                                        value={m}
+                                                        defaultValue={month}
+                                                    >
+                                                        {m}.mesec
+                                                    </option>
+                                                ))}
                                             </select>
                                         </div>
                                         <div className="col-6">
@@ -203,7 +359,17 @@ export default class Order extends Component {
                             </div>
 
                             <div>
-                                <table className="table table-bordered table-striped table-hover">
+                                <div className={data.length == 0 ? 'alert alert-primary alert-dismissible fade show mt-4' : 'd-none'} role="alert">
+                                    <button type="button" className="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                        <span className="sr-only">Close</span>
+                                    </button>
+                                    <strong>Nema porudžbenica za traženi mesec.</strong>
+                                </div>
+                                <span className="text-center">
+                                    <Loader type="ThreeDots" color="#00BFFF" height={60} width={60} visible={showLoader} />
+                                </span>
+                                <table className={data.length > 0 ? 'table table-bordered table-striped table-hover' : 'd-none' }>
                                     <thead>
                                         <tr>
                                             <th>Služba</th>
@@ -211,11 +377,12 @@ export default class Order extends Component {
                                             <th>Količina</th>
                                             <th>Cena</th>
                                             <th>Ukupno</th>
+                                            <th>Napomena</th>
                                             <th>Snimljeno</th>
-                                            <th></th>
+                                            <th>Edit</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody >
                                         {data.map(order => (
                                             <tr key={order.id}>
                                                 <td scope="row">
@@ -244,17 +411,26 @@ export default class Order extends Component {
                                                     />
                                                 </td>
                                                 <td>
+                                                    { order.napomena }
+                                                </td>
+                                                <td>
                                                     <Moment format="DD/MM/YYYY">
                                                         {order.created_at}
                                                     </Moment>
                                                 </td>
 
-                                                <td className={order.account_id !== user.account_id ? 'd-none' : ''}>
-                                                    <a
+                                                <td
+                                                    className={
+                                                        order.account_id !==
+                                                        user.account_id
+                                                            ? "d-none"
+                                                            : ""
+                                                    }
+                                                >
+                                                    <a style={{ cursor: 'pointer' }}
                                                         onClick={() =>
-                                                            this.deleteCatridgeFromOrder(
-                                                                order
-                                                            )
+                                                            confirm('Da li želiš da izbrišeš ovaj toner?')
+                                                            && this.deleteCatridgeFromOrder(order)
                                                         }
                                                     >
                                                         <i className="fa fa-trash text-danger"></i>

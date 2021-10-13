@@ -6,7 +6,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="page-title">
-        <h3>Nova porudžbenica</h3>
+        <h3>Nova porudžbenica za službu <b>"{{ Auth::user()->account->sluzba }}"</b></h3>
     </div>
 
     <div class="row">

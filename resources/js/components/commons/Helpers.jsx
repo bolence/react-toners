@@ -1,12 +1,21 @@
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const toastOptions = [
+const defaultToastOption = [
     {
         closeOnClick: true,
         hideProgressBar: true
     }
 ];
+
+const CloseButton = ({ closeToast }) => (
+    <i
+      className="fa fa-remove"
+      onClick={closeToast}
+    >
+    delete
+    </i>
+  );
 
 const helpers = {
     getUser() {
@@ -17,12 +26,14 @@ const helpers = {
     notify(message, color, speed, pos) {
         const customOptions = {
             position: pos ? pos : "top-right",
-            autoClose: speed ? speed : 2000
+            autoClose: speed ? speed : 3000
         };
 
-        toastOptions.push(customOptions);
-        !color ? toast.success(message, toastOptions) : toast.error(message, toastOptions);
+        let options = {...defaultToastOption, ...customOptions }
+        !color ? toast.success(message, options) : toast.error(message, options);
     },
+
+
 
     formatNumber(inputNumber) {
         let formetedNumber=(Number(inputNumber)).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');

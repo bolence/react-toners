@@ -5,7 +5,7 @@
 
 <div class="container-fluid">
     <div class="page-title">
-        <h3>Nova porudžbenica</h3>
+        <h3>Limiti</h3>
     </div>
 
     <div class="row">

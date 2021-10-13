@@ -46,7 +46,6 @@ class Users extends Component {
             bonus: this.state.bonus,
             account_id: this.state.account_id
         };
-        console.log(data);
         axios
             .post("/api/bonuses", data)
             .then(response => {
@@ -54,17 +53,20 @@ class Users extends Component {
                 helpers.notify(response.data.message);
             })
             .catch(error => {
-                helpers.notify(error.data.message, true);
+                helpers.notify(error.response.data.message, true);
             });
     };
 
     deleteBonus = bonus => {
-        axios.delete('/api/bonuses/' + bonus).then(response => {
-            helpers.notify(response.data.message);
-            this.setState({ users: response.data.users});
-        }).catch( error => {
-            helpers.notify(error.data.message, true);
-        })
+        axios
+            .delete("/api/bonuses/" + bonus)
+            .then(response => {
+                helpers.notify(response.data.message);
+                this.setState({ users: response.data.users });
+            })
+            .catch(error => {
+                helpers.notify(error.data.message, true);
+            });
     };
 
     render() {
@@ -142,7 +144,7 @@ class Users extends Component {
                                     ) : null}
                                 </td>
                                 <td>
-                                    <a
+                                    <a style={{ cursor: 'pointer' }}
                                         onClick={() =>
                                             this.handleModalShowHide(
                                                 user.account
@@ -155,12 +157,22 @@ class Users extends Component {
                                         ></i>
                                     </a>
                                     &nbsp;
-                                    <a
+                                    <a style={{ cursor: 'pointer' }}
+                                        className={
+                                            JSON.stringify(
+                                                user.account.bonus[0]
+                                            ) ?? "d-none"
+                                        }
                                         onClick={() =>
-                                            this.deleteBonus(
-                                                JSON.stringify(user.account.bonus[0]) ? JSON.parse(
-                                                    user.account.bonus[0].id
-                                                ) : null
+                                            confirm('Da li želiš da izbrišeš ovaj bonus?') && this.deleteBonus(
+                                                JSON.stringify(
+                                                    user.account.bonus[0]
+                                                )
+                                                    ? JSON.parse(
+                                                          user.account.bonus[0]
+                                                              .id
+                                                      )
+                                                    : null
                                             )
                                         }
                                     >
