@@ -7,7 +7,10 @@ export default class Login extends Component {
     state = {
         email: "",
         password: "",
-        errors: {},
+        errors: {
+            email: '',
+            message: '',
+        },
         token_mismatch_error: false,
         token_mismatch_message: '',
     };
@@ -36,13 +39,15 @@ export default class Login extends Component {
 
             })
             .catch(error => {
-                if(error.data.response.error == 'token_mismatch'){
+                let errors = error.response.data;
+
+                if(errors.message == 'token_mismatch'){
                     this.setState({
                         token_mismatch_error: true,
-                        token_mismatch_message: error.data.response.message,
+                        token_mismatch_message: errors.message,
                     });
                 }else {
-                    this.setState({ errors: error.data.errors });
+                    this.setState({ errors: errors.errors });
                 }
 
             });
@@ -62,6 +67,7 @@ export default class Login extends Component {
         return (
             <React.Fragment>
                 <h5 className="mb-4 text-muted">Ulogujte se sa svojim nalogom</h5>
+
                 <form>
                     <div className="form-group">
                         <input

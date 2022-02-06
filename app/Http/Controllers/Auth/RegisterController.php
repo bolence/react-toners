@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -85,6 +87,8 @@ class RegisterController extends Controller
         Auth::login($user);
 
         $user->notify(new RegistrationConfirmation);
+
+        return $user;
     }
 
      /**

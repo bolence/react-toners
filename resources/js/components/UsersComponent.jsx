@@ -12,7 +12,8 @@ class Users extends Component {
         bonus: 0,
         account_id: "",
         showHide: false,
-        account: {}
+        account: {},
+        errors_message: '',
     };
 
     handleModalShowHide = account => {
@@ -42,6 +43,12 @@ class Users extends Component {
     };
 
     saveBonus = () => {
+        if(this.state.bonus <= 0) {
+            this.setState({
+                errors_message: 'Broj mora biti veći od 0'
+            });
+            return;
+        };
         let data = {
             bonus: this.state.bonus,
             account_id: this.state.account_id
@@ -70,7 +77,7 @@ class Users extends Component {
     };
 
     render() {
-        const { users, showHide, bonus, account } = this.state;
+        const { users, showHide, bonus, account, errors_message } = this.state;
 
         return (
             <React.Fragment>
@@ -84,12 +91,21 @@ class Users extends Component {
                     </Modal.Header>
                     <Modal.Body>
                         <input
-                            className="form-control"
+                            className={errors_message ? 'form-control is-invalid' : 'form-control'}
                             name="bonus"
                             type="text"
                             value={bonus}
                             onChange={this.handleInputChange}
                         />
+                         <span
+                            className={
+                                errors_message
+                                    ? "text-danger float-left mb-2"
+                                    : ""
+                            }
+                        >
+                            {errors_message}
+                        </span>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button

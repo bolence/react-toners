@@ -30,7 +30,13 @@ export default class OrderCreate extends Component {
         copiedFromLastMonth: false
     };
 
-    handleSubmit = e => {
+
+    componentDidMount() {
+        this.getPrintersForSelectList();
+        this.getMonthOrder();
+    }
+
+    handleSubmit = async (e) => {
         e.preventDefault();
 
         const { quantity, printer, napomena } = this.state;
@@ -40,7 +46,7 @@ export default class OrderCreate extends Component {
             napomena,
             printer: printer ? printer.value : ""
         };
-        axios
+        await axios
             .post("/api/orders", data)
             .then(response => {
                 let orders = [...this.state.orders];
@@ -62,7 +68,7 @@ export default class OrderCreate extends Component {
             })
             .catch(error => {
                 this.setState({ errors: error.response.data.errors });
-                helpers.notify(error.response.data.message, true);
+                helpers.notify('Popunite zahtevana polja', true);
             });
     };
 
@@ -93,13 +99,8 @@ export default class OrderCreate extends Component {
         });
     };
 
-    componentDidMount() {
-        this.getPrintersForSelectList();
-        this.getMonthOrder();
-    }
-
-    getPrintersForSelectList = () => {
-        axios
+    getPrintersForSelectList = async () => {
+       await axios
             .get("/api/printers")
             .then(response => {
                 let printers = response.data.printers;
@@ -114,9 +115,9 @@ export default class OrderCreate extends Component {
             .catch(error => {});
     };
 
-    getMonthOrder = () => {
+    getMonthOrder = async () => {
         const date = new Date();
-        axios
+        await axios
             .get("/api/orders?month=" + (date.getMonth() + 1))
             .then(response => {
                 this.setState({
@@ -157,18 +158,17 @@ export default class OrderCreate extends Component {
             });
     };
 
-    repeatOrderFromPreviousMonth = (e) => {
+    repeatOrderFromPreviousMonth = async (e) => {
         e.preventDefault();
         const date = new Date();
         const previousMonth = date.getMonth();
-        axios.get('/api/orders?month=' + previousMonth).then( response => {
+        await axios.get('/api/orders?month=' + previousMonth).then( response => {
             this.setState({
                 previousMonthOrders: response.data,
                 showPreviousMonthOrder: true,
                 lastMonthOrders: response.data.orders,
                 last_month_orders_sum: response.data.summary.orders_sum,
                 last_month_summary: response.data.summary.summary,
-
             });
         }).catch( error => {
 
@@ -181,8 +181,8 @@ export default class OrderCreate extends Component {
         });
     };
 
-    copyOrderFromLastMonth = () => {
-        axios.get('/api/orders/copy_orders').then( response => {
+    copyOrderFromLastMonth = async () => {
+        await axios.get('/api/orders/copy_orders').then( response => {
             helpers.notify(response.data.message);
             this.setState({
                 orders : response.data.orders,
@@ -191,8 +191,7 @@ export default class OrderCreate extends Component {
                 limit: response.data.summary.limit,
                 orders_sum: response.data.summary.orders_sum,
                 summary: response.data.summary.summary,
-                copiedFromLastMonth: response.data.copied,
-
+                copiedFromLastMonth: response.data.copied
             });
 
         }).catch( error => {
@@ -235,7 +234,6 @@ export default class OrderCreate extends Component {
                     >
                         <Modal.Title>
                             Porudžbenica iz prošlog meseca - {helpers.formatNumber(last_month_orders_sum)} RSD
-
                         </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
@@ -251,7 +249,7 @@ export default class OrderCreate extends Component {
                         </div>
                         {lastMonthOrders.length > 0 ?
 
-                        <table className="table table-striped">
+                        <table className="table table-striped table-bordered table-hover">
                             <thead>
                                 <tr>
                                     <th>Štampač</th>
@@ -374,7 +372,7 @@ export default class OrderCreate extends Component {
                                     </span>
                                 </div>
                                 <div className="form-group">
-                                    <label htmlFor="toner">Toner</label>
+                                    <label htmlFor="toner">Toner <span className="text-info">Automatsko popunjavanje</span></label>
                                     <input
                                         type="text"
                                         name="catrigde"
@@ -424,7 +422,7 @@ export default class OrderCreate extends Component {
                                 </div>
 
                                 <div className="form-group">
-                                    <label htmlFor="toner">Vrednost</label>
+                                    <label htmlFor="toner">Vrednost <span className="text-info">Automatsko popunjavanje</span></label>
                                     <input
                                         name="amount"
                                         value={amount}

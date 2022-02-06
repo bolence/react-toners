@@ -37,6 +37,8 @@ export default class Order extends Component {
         show_info: false,
         showLoader: true,
         count_toners: 0,
+        copied: false,
+        has_previous_month_orders: false,
     };
 
     componentDidMount() {
@@ -49,11 +51,17 @@ export default class Order extends Component {
                     orders_sum: response.data.summary.orders_sum,
                     title: response.data.title,
                     count_toners: response.data.count_toners,
-                    showLoader: false
+                    showLoader: false,
+                    copied: response.data.copied,
+                    has_previous_month_orders: previous_month_orders
+
                 });
             })
             .catch(error => {
-                helpers.notify(error.data.message, true);
+                this.setState({
+                    showLoader: false
+                })
+                helpers.notify(error.response.message, true);
             });
     }
 
@@ -205,7 +213,9 @@ export default class Order extends Component {
             error,
             orders_sum,
             showLoader,
-            count_toners
+            count_toners,
+            copied,
+            has_previous_month_orders
         } = this.state;
 
         const { length: count } =
@@ -235,13 +245,13 @@ export default class Order extends Component {
                     </Modal.Header>
                     <Modal.Body>
 
-                    <div className="alert alert-primary alert-dismissible fade show" role="alert">
+                    <div className={has_previous_month_orders ? 'alert alert-primary alert-dismissible fade show' : 'd-none' } role="alert">
                                 <button type="button" className="close" data-dismiss="alert" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                     <span className="sr-only">Close</span>
                                 </button>
                                 <strong>Vaša porudžbenica iz prošlog meseca će biti kopirana kao porudžbenica za ovaj mesec. Radnja će biti izvršena na izabrani datum.</strong>
-                            </div>
+                    </div>
 
                         <div className={dateGreaterThan ? 'alert alert-danger alert-dismissible fade show' : 'd-none'} role="alert">
                             <button type="button" className="close" data-dismiss="alert" aria-label="Close">
@@ -250,23 +260,22 @@ export default class Order extends Component {
                             </button>
                             <strong>Izabrali ste datum u prošlosti!</strong>
                         </div>
-
+                        <span className={has_previous_month_orders ? '' : 'd-none'}>
                         <Calendar
                         onChange={this.calendarChanged}
                         value={reminderDate}
                         width={1000}
                         shouldHighlightWeekends
+
                         />
+                        </span>
                         <br/>
                         <span className={error ? 'text-danger' : ''}>
                             {error}
                         </span>
-                        {/* <span>
-                            <input type="checkbox" onChange={this.handleChangeCheckbox} value={automatic_copy}/>
-                            {" "} Automatsko kopiranje porudžbenice iz prošlog meseca */}
-
-                        {/* </span> */}
-
+                    <div class={!has_previous_month_orders ? 'alert alert-danger' : 'd-none'} role="alert">
+                        <strong>Nemate poručene tonere iz prošlog meseca</strong>
+                    </div>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button
@@ -279,6 +288,7 @@ export default class Order extends Component {
                             variant="primary"
                             disabled={dateGreaterThan}
                             onClick={() => this.saveOrderReminder()}
+                            disabled={!has_previous_month_orders ?? false}
                         >
                             Snimi podsetnik
                         </Button>
@@ -300,7 +310,7 @@ export default class Order extends Component {
                                 {title} - {count_toners} toner/a
                                 <span className={orders_sum == 0 ? 'd-none' : '' }> - vrednost {helpers.formatNumber(orders_sum) + ' RSD.'}</span>
                             </b>
-                            <span className="float-right">
+                            <span className={!copied ? 'float-right' : 'd-none' }>
                                 <button className="btn btn-primary" onClick={this.handleOpenCloseModal}>
                                     <i className="fa fa-calendar"></i> Automatsko kopiranje
                                 </button>
@@ -385,8 +395,15 @@ export default class Order extends Component {
                                     <tbody >
                                         {data.map(order => (
                                             <tr key={order.id}>
-                                                <td scope="row">
-                                                    {order.account.sluzba}
+                                            <td scope="row">
+                                                {order.account.sluzba}
+                                                <a title="Kopirano iz prošle porudžbenice" className={
+                                            ! order.copied
+                                            ? 'd-none'
+                                            : ''
+                                            }>
+                                            <i className="fa fa-question-circle float-right text-danger font-weight-bold" ></i>
+                                            </a>
                                                 </td>
                                                 <td>
                                                     {order.printer.name} (

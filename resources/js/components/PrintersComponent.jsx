@@ -302,6 +302,7 @@ export default class Printers extends Component {
                     <div className="card">
                         <div className="card-header">
                             Spisak štampača sa tonerima i cenama
+
                             <span className="float-right">
                                 <button
                                     className="btn btn-primary"

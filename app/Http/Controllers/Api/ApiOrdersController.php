@@ -36,6 +36,7 @@ class ApiOrdersController extends Controller
             ->get();
 
         $copied = CopiedOrder::where('account_id', '=', $user->account_id)->whereMonth('created_at', '=', date('m'))->exists();
+        $has_previous_month_orders = Order::previous_month_order($user->account_id);
 
         return response()->json([
             'orders' => $orders,
@@ -44,6 +45,7 @@ class ApiOrdersController extends Controller
             'title' => "Poručeni toneri za " . $user->account->sluzba . " $month.$year.",
             'summary' => $this->get_summary_info($month),
             'copied' => $copied,
+            'previous_month_orders' => $has_previous_month_orders,
         ], 200);
     }
 
