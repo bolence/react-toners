@@ -36,7 +36,7 @@ class ApiOrdersController extends Controller
             ->get();
 
         $copied = CopiedOrder::where('account_id', '=', $user->account_id)->whereMonth('created_at', '=', date('m'))->exists();
-        $has_previous_month_orders = Order::previous_month_order($user->account_id);
+        $has_previous_month_orders = Order::previous_month_order($user->account_id, $month);
 
         return response()->json([
             'orders' => $orders,

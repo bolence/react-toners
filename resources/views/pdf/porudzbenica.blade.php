@@ -32,7 +32,7 @@ tr {
 <div class="col-md-10">
     <?php $sum = 0; ?>
     <h3 style="text-align: center; margin: 0 auto; padding: 30px; font-weight: bolder; font-style: 'Helvetica';">
-        Spisak poručenih tonera {{ date('m') }}.mesec {{ date('Y') }}.godina
+        Spisak svih poručenih tonera za {{ date('m') }}.{{ date('Y') }}.
     </h3>
   <table class="table table-bordered table-striped" border="1" cellpadding="2" cellspacing="2">
       <thead>
@@ -50,7 +50,6 @@ tr {
       <tbody>
 
         @foreach( $orders as $order)
-        <?php $sum += $order->printer->price * $order->quantity; ?>
         <tr>
           <td style="font-size: 15px; font-weight: bold;">{{ $order->user->name }}</td>
           <td style="font-size: 15px; font-weight: bold;">{{ $order->user->account->sluzba }}</td>
@@ -58,7 +57,7 @@ tr {
           <td style="font-size: 15px; font-weight: bold;">{{ $order->printer->catridge }}</td>
           <td style="font-size: 15px; font-weight: bold;">{{ $order->quantity }}</td>
           <td style="font-size: 15px; font-weight: bold;">{{ number_format($order->printer->price,2) }}</td>
-          <td style="font-size: 15px; font-weight: bold;">{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</td>
+          <td style="font-size: 15px; font-weight: bold;">{{ $order->created_at->format('d.m.Y H:i') }}</td>
           <td style="font-size: 15px; font-weight: bold;">{{ number_format($order->printer->price * $order->quantity,2) }}</td>
         </tr>
 
@@ -67,7 +66,7 @@ tr {
         <tr>
             <td colspan="6"></td>
             <td style="font-size: 15px; font-weight: bold;pApi">Okvirno za plaćanje:</td>
-            <td style="font-size: 15px; font-weight: bold;">{{ number_format($sum,2) }} RSD.</td>
+            <td style="font-size: 15px; font-weight: bold;">{{ number_format($orders->sum('price'),2) }} RSD.</td>
           </tr>
       </tbody>
   </table>

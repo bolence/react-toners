@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import axios from "axios";
+import { withItem } from "react-bootstrap-typeahead";
 
 export default class Login extends Component {
 
@@ -134,7 +135,7 @@ export default class Login extends Component {
                 <p className="mb-0 text-muted float-left ">
                     Nemaš nalog? <a href="/register"><b>Registruj se</b></a>
                 </p>
-                <p className="float-right font-weight-bold" style={{ position: "absolute", bottom: 0, right: 0, left: 0, marginBottom: -50, fontSize: 30 }}>
+                <p className="float-right font-weight-bold" style={{ position: "absolute", bottom: 0, right: 0, left: 0, marginBottom: -50, fontSize: 30, color: 'white', }}>
                     Developed by: Boško Bošković
                 </p>
             </React.Fragment>

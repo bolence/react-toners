@@ -3,11 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\Order;
-use Illuminate\Support\Str;
 use App\Services\PDFCreator;
 use App\Notifications\PdfOrder;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class SendOrderPdfForCurrentMonth extends Command
 {
@@ -48,15 +46,21 @@ class SendOrderPdfForCurrentMonth extends Command
         ->groupBy('account_id')
         ->get();
 
-        if (!$orders) {
+        if (count($orders) == 0){
+            $this->error('There is no any orders');
             return;
         }
 
+        $count = 0;
+
         foreach ($orders as $order) {
-            PDFCreator::create_pdf($order->user);
+            PDFCreator::create_pdf_for_user($order->user);
             $order->user->notify(new PdfOrder($order->user));
-            Log::info('PDF orders sent to ' . $order->user->name);
+            info('PDF orders sent to ' . $order->user->name);
+            $count++;
         }
+
+        $this->info($count . ' služba/i je poručilo tonere.');
 
     }
 }

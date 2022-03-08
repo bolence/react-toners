@@ -64,6 +64,7 @@ class ReminderForOrder extends Command
             }
         }
 
-        Log::info('Podsetnik poslat na ' . count($users) . ' mejl adresa');
+        info('Podsetnik poslat na ' . count($users) . ' mejl adresa');
+        $accounts = [];
     }
 }

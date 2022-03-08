@@ -32,7 +32,7 @@ tr {
 <div class="col-md-10">
     <?php $sum = 0; ?>
     <h3 style="text-align: center; margin: 0 auto; padding: 30px; font-weight: bolder; font-style: 'Helvetica';">
-        Spisak poručenih tonera za službu <b>{{ $user->account->sluzba }}</b> {{ date('m') }}.{{ date('Y') }}
+        Spisak poručenih tonera službe "<b>{{ $user->account->sluzba }}</b>" za {{ date('m') }}.{{ date('Y') }}.
     </h3>
   <table class="table table-bordered table-striped" border="1" cellpadding="2" cellspacing="2">
       <thead>
@@ -56,7 +56,7 @@ tr {
           <td style="font-size: 15px; font-weight: bold;">{{ $order->printer->catridge }}</td>
           <td style="font-size: 15px; font-weight: bold;">{{ $order->quantity }}</td>
           <td style="font-size: 15px; font-weight: bold;">{{ number_format($order->printer->price,2) }}</td>
-          <td style="font-size: 15px; font-weight: bold;">{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</td>
+          <td style="font-size: 15px; font-weight: bold;">{{ \Carbon\Carbon::parse($order->created_at)->format('d.m.Y H:i') }}</td>
           <td style="font-size: 15px; font-weight: bold;">{{ number_format($order->printer->price * $order->quantity,2) }}</td>
         </tr>
 

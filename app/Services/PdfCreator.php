@@ -6,7 +6,7 @@ use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
 
 class PDFCreator extends PDF  {
 
-    public static function create_pdf($user)
+    public static function create_pdf_for_user($user)
     {
 
         $folder = storage_path("reports/users/$user->id/");
@@ -25,6 +25,18 @@ class PDFCreator extends PDF  {
         ->setOption('footer-left', 'Kreiran ' . date('d.m.Y H:i'))
         ->save($filename);
 
+    }
+
+    public static function create_pdf_for_summary_orders($orders)
+    {
+        $folder = storage_path("reports/");
+        $filename = $folder . 'porudzbenica_tonera_za_' . date('m') . '_' . date('Y') . '.pdf';
+
+        parent::loadView("pdf.porudzbenica" , ['orders' => $orders])
+        ->setOrientation('landscape')
+        ->setOption('footer-right', 'Stranica [page] od [toPage]')
+        ->setOption('footer-left', 'Kreiran ' . date('d.m.Y H:i'))
+        ->save($filename);
     }
 
 

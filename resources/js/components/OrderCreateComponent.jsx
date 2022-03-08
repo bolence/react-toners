@@ -85,7 +85,9 @@ export default class OrderCreate extends Component {
                 catrigde: response.data.catridge,
                 printer: value,
                 price: response.data.price,
-                errors: ""
+                errors: "",
+                quantity: "",
+                amount: "",
             });
         });
     };

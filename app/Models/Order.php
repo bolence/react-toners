@@ -84,10 +84,11 @@ class Order extends Model
     }
 
 
-    public static function previous_month_order($account_id)
+    public static function previous_month_order($account_id, $month)
     {
+        $previous_month = $month - 1;
         return self::with('printer', 'account')
-            ->whereMonth('created_at', '=', date('m') - 1)
+            ->whereMonth('created_at', '=', $previous_month)
             ->where('account_id', '=', $account_id)
             ->count() > 0;
     }

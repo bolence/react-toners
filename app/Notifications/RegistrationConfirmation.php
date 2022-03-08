@@ -17,7 +17,7 @@ class RegistrationConfirmation extends Notification implements ShouldQueue
      * @param  mixed  $notifiable
      * @return array
      */
-    public function via($notifiable)
+    public function via()
     {
         return ['mail'];
     }
@@ -28,7 +28,7 @@ class RegistrationConfirmation extends Notification implements ShouldQueue
      * @param  mixed  $notifiable
      * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail()
     {
         return (new MailMessage)
                     ->line('Uspešna registracija')
@@ -36,16 +36,4 @@ class RegistrationConfirmation extends Notification implements ShouldQueue
                     ->line('Hvala vam što koristite aplikaciju!');
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
-    public function toArray($notifiable)
-    {
-        return [
-            //
-        ];
-    }
 }

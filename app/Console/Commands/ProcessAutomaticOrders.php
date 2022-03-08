@@ -61,21 +61,22 @@ class ProcessAutomaticOrders extends Command
                 ->where('account_id', '=', $reminder->user->account_id)
                 ->get();
 
-            $this->info('Last month orders: ' . $last_month_orders->count());
+            $this->info('Last month orders: ' . count($last_month_orders));
 
-            if ($last_month_orders) {
-                foreach ($last_month_orders as $last_order) {
-                    $order = new Order;
-                    $order->quantity = $last_order->quantity;
-                    $order->price = $last_order->price;
-                    $order->account_id = $last_order->account_id;
-                    $order->month = date('m');
-                    $order->printer_id = $last_order->printer_id;
-                    $order->user_id = $last_order->user_id;
-                    $order->copied = 1;
-                    $order->save();
-                }
+            if(count($last_month_orders) == 0) return;
+
+            foreach ($last_month_orders as $last_order) {
+                $order = new Order;
+                $order->quantity = $last_order->quantity;
+                $order->price = $last_order->price;
+                $order->account_id = $last_order->account_id;
+                $order->month = date('m');
+                $order->printer_id = $last_order->printer_id;
+                $order->user_id = $last_order->user_id;
+                $order->copied = 1;
+                $order->save();
             }
+
 
             $user = User::find($reminder->user_id);
             $user->notify(new InfoAboutAutomaticOrderFinished($last_month_orders));

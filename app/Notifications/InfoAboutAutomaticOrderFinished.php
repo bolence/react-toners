@@ -26,7 +26,7 @@ class InfoAboutAutomaticOrderFinished extends Notification
      * @param  mixed  $notifiable
      * @return array
      */
-    public function via($notifiable)
+    public function via()
     {
         return ['mail'];
     }
@@ -45,18 +45,5 @@ class InfoAboutAutomaticOrderFinished extends Notification
             ->line('Potvrda o automatskom popunjavanju porudžbenice za trenutni mesec.')
             ->line('Uspešno je kopirana vaša porudžbenica iz prošlog meseca za trenutni mesec')
             ->line('Hvala na korišćenju aplikacije.');
-    }
-
-    /**
-     * Get the array representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
-    public function toArray($notifiable)
-    {
-        return [
-            //
-        ];
     }
 }

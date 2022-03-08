@@ -4,10 +4,11 @@ namespace App\Notifications;
 
 use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
 
-class ReminderForOrderNotification extends Notification
+class ReminderForOrderNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -29,7 +30,7 @@ class ReminderForOrderNotification extends Notification
      * @param  mixed  $notifiable
      * @return array
      */
-    public function via($notifiable)
+    public function via()
     {
         return ['mail'];
     }
@@ -40,26 +41,13 @@ class ReminderForOrderNotification extends Notification
      * @param  mixed  $notifiable
      * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail()
     {
         return (new MailMessage)
-            ->greeting('Dobro jutro!')
+            ->greeting('Dobro jutro, ' . $this->user->name)
             ->subject('Podsetnik za unos tonera za trenutni mesec')
-            ->line('Ovo je podsetnik da nista uneli tonere za ovaj mesec. Uradite to što pre.')
-            ->action('Poručite tonere', url('/'))
+            ->line('Ovo je podsetnik da niste uneli tonere za ovaj mesec. Uradite to što pre!')
+            ->action('Poručite tonere', url('/orders/create'))
             ->line('Hvala vam što koristite aplikaciju!');
-    }
-
-    /**
-     * Get the array representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
-    public function toArray($notifiable)
-    {
-        return [
-            //
-        ];
     }
 }

@@ -12,7 +12,7 @@
     <link rel="icon" type="image/ico" href="{{ asset('images/favicon.ico') }}">
     <style>
         body {
-            background-image: url("images/background.jpg");
+            background-image: url("images/register.jpg");
             background-size: cover;
         }
     </style>

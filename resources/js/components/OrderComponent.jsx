@@ -46,15 +46,14 @@ export default class Order extends Component {
             .get("/api/orders?month=" + this.state.month)
             .then(response => {
                 this.setState({
+                    title: response.data.title,
                     orders: response.data.orders,
                     orders_count: response.data.summary.orders_count,
                     orders_sum: response.data.summary.orders_sum,
-                    title: response.data.title,
                     count_toners: response.data.count_toners,
                     showLoader: false,
                     copied: response.data.copied,
-                    has_previous_month_orders: previous_month_orders
-
+                    has_previous_month_orders: response.data.previous_month_orders
                 });
             })
             .catch(error => {
@@ -195,6 +194,8 @@ export default class Order extends Component {
         });
     };
 
+
+
     render() {
         const {
             orders,
@@ -228,7 +229,6 @@ export default class Order extends Component {
             currentPage,
             defaultPerPage
         );
-
 
         return (
             <div className="row">
@@ -288,7 +288,6 @@ export default class Order extends Component {
                             variant="primary"
                             disabled={dateGreaterThan}
                             onClick={() => this.saveOrderReminder()}
-                            disabled={!has_previous_month_orders ?? false}
                         >
                             Snimi podsetnik
                         </Button>
@@ -310,7 +309,7 @@ export default class Order extends Component {
                                 {title} - {count_toners} toner/a
                                 <span className={orders_sum == 0 ? 'd-none' : '' }> - vrednost {helpers.formatNumber(orders_sum) + ' RSD.'}</span>
                             </b>
-                            <span className={!copied ? 'float-right' : 'd-none' }>
+                            <span className={!copied && orders.length == 0  ? 'float-right' : 'd-none' }>
                                 <button className="btn btn-primary" onClick={this.handleOpenCloseModal}>
                                     <i className="fa fa-calendar"></i> Automatsko kopiranje
                                 </button>
