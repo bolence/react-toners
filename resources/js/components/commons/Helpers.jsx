@@ -1,5 +1,7 @@
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import numeral from "numeral";
+import moment from "moment";
 
 const defaultToastOption = [
     {
@@ -33,16 +35,17 @@ const helpers = {
         !color ? toast.success(message, options) : toast.error(message, options);
     },
 
-
-
     formatNumber(inputNumber) {
-        let formetedNumber=(Number(inputNumber)).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-        let splitArray=formetedNumber.split('.');
-        if(splitArray.length>1){
-          formetedNumber=splitArray[0];
-        }
-        return(formetedNumber + '.00');
-      },
+        return numeral(inputNumber).format('0,0.00');
+    },
+
+    formatDate(date) {
+        return moment(date).format('DD.MM.YYYY')
+    },
+
+    formatDateTime(date) {
+        return moment(date).format('DD.MM.YYYY HH:mm')
+    }
 
 };
 

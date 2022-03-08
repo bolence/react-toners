@@ -10,25 +10,6 @@ use App\Http\Controllers\Controller;
 
 class ApiBonusController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -39,69 +20,24 @@ class ApiBonusController extends Controller
     public function store(Request $request)
     {
 
-        $exists = Bonus::where('account_id', '=', $request->account_id)
-                        ->where('bonus_month', '=', date('m'))
-                        ->whereRaw('YEAR(created_at) = ' . date('Y'))
-                        ->exists();
-
-        if($exists)
-        {
+        try {
+            Bonus::updateOrCreate(['account_id' => $request->account_id],
+            [
+                'bonus' => $request->bonus,
+                'bonus_month' => date('m')
+            ]);
+        } catch (\Throwable $th) {
+            info('Error occured ' . $th->getMessage() . ' ' . $th->getLine() . ' ' . $th->getCode());
             return response()->json([
-                'message' => 'Za ovaj mesec ste već dodali bonus.Pokušajte sledeći.'
-            ], 400);
-        }
-
-        $bonus = Bonus::create([
-            'bonus' => $request->bonus,
-            'account_id' => $request->account_id,
-            'bonus_month' => date('m')
-        ]);
-
-        if( $bonus )
-        {
-            return response()->json([
-                'message' => 'Novi bonus dodat/izmenjen. Novi bonus je sad ' . number_format($request->bonus, 2),
-                'users' => User::with('account.bonus')->get(),
-            ], 200);
+                'message' => 'Došlo je do greške prilikom dodavanja bonusa'
+            ],400);
         }
 
         return response()->json([
-            'message' => 'Došlo je do greške prilikom dodavanja bonusa'
-        ],400);
-    }
+            'message' => 'Novi bonus dodat/izmenjen. Novi bonus je sad ' . number_format($request->bonus, 2),
+            'users' => User::with('account.bonus')->get(),
+        ], 200);
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
     }
 
     /**
@@ -113,14 +49,7 @@ class ApiBonusController extends Controller
     public function destroy($id)
     {
 
-        $bonus = Bonus::find($id);
-
-        if(! $bonus )
-        {
-            return response()->json([
-                'message' => 'Ovaj bonus ne postoji ili je već izbrisan'
-            ], 400);
-        }
+        $bonus = Bonus::findOrFail($id);
 
         try
         {
@@ -128,6 +57,7 @@ class ApiBonusController extends Controller
         }
         catch (Exception $e)
         {
+            info('Error occured ' . $e->getMessage() . ' ' . $e->getLine() . ' ' . $e->getCode());
             return response()->json([
                 'message' => 'Došlo je do greške prilikom brisanja',
                 'error_message' => $e->getMessage()

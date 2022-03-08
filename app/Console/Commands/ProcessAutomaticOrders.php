@@ -56,7 +56,8 @@ class ProcessAutomaticOrders extends Command
             return;
         }
 
-        foreach ($users_reminders as $reminder) {
+        foreach ($users_reminders as $reminder)
+        {
             $last_month_orders = Order::whereMonth('created_at', '=', date('m') - 1)
                 ->where('account_id', '=', $reminder->user->account_id)
                 ->get();
@@ -78,8 +79,10 @@ class ProcessAutomaticOrders extends Command
             }
 
 
-            $user = User::find($reminder->user_id);
-            $user->notify(new InfoAboutAutomaticOrderFinished($last_month_orders));
+            $user = User::findOrFail($reminder->user_id);
+            if($user) {
+                $user->notify(new InfoAboutAutomaticOrderFinished($last_month_orders));
+            }
 
             $this->info('Copied finished');
             $this->info('User reminders count: ' . $users_reminders->count());

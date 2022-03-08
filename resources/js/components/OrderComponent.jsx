@@ -79,6 +79,7 @@ export default class Order extends Component {
     handleMonthChange = e => {
 
         let month = e.target.value;
+        if(month == '') return;
         this.setState({ month, showLoader: true });
         let searchMonth = month ? "?month=" + month : "";
         axios.get("/api/orders" + searchMonth).then(response => {
@@ -342,7 +343,6 @@ export default class Order extends Component {
                                                 value={month}
                                                 className="form-control"
                                             >
-                                                <option>Izaberi mesec</option>
                                                 {_.range(1, 12 + 1).map(m => (
                                                     <option
                                                         key={m}

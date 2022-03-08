@@ -13,14 +13,16 @@
                         <ul class="nav-list">
 
                             <div class="dropdown-divider"></div>
+                            @if(\App\Models\Order::get_count_of_orders())
                             <li>
                                 <a href="/reports" class="dropdown-item">
                                     <i class="fa fa-print"></i> Izveštaj za sve službe
                                 </a>
                             </li>
+                            @endif
                             <li>
                                 <a href="/logout" class="dropdown-item">
-                                    <i class="fa fa-sign-out"></i> Logout
+                                    <i class="fa fa-sign-out-alt"></i> Logout
                                 </a>
                             </li>
                             @if (Auth::check() && Auth::user()->isAdmin() && \App\Models\Order::get_count_of_orders())

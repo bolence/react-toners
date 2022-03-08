@@ -10,6 +10,7 @@
     <link href="{{ asset('assets/vendor/bootstrap4/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/master.css') }}" rel="stylesheet">
     <link rel="icon" type="image/ico" href="{{ asset('images/favicon.ico') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" rel="stylesheet" />
     @stack('css')
 </head>
 

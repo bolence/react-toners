@@ -235,7 +235,7 @@ export default class OrderCreate extends Component {
                         onClick={() => this.handleOpenCloseModal()}
                     >
                         <Modal.Title>
-                            Porudžbenica iz prošlog meseca - {helpers.formatNumber(last_month_orders_sum)} RSD
+                            Porudžbenica iz prošlog meseca - {helpers.formatNumber(last_month_orders_sum)} RSD.
                         </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
@@ -244,7 +244,7 @@ export default class OrderCreate extends Component {
                                 <span aria-hidden="true">&times;</span>
                                 <span className="sr-only">Close</span>
                             </button>
-                            <strong>Kopiranjem porudžbenice iz prošlog meseca nije moguće jer premašuje vaš limit {" "}
+                            <strong>Kopiranjem porudžbenice iz prošlog meseca nije moguće jer premašuje vaš limit od {" "}
                                 <b>{helpers.formatNumber(limit)} RSD.</b><br />
                                 Izbrišite trenutne tonere iz porudžbenice i dodajte samo tonere iz prošlog meseca.
                             </strong>
@@ -257,7 +257,7 @@ export default class OrderCreate extends Component {
                                     <th>Štampač</th>
                                     <th>Ketridž</th>
                                     <th>Količina</th>
-                                    <th>Cena</th>
+                                    <th>Suma</th>
                                     <th>Kreirano</th>
                                 </tr>
                                 </thead>
@@ -268,7 +268,7 @@ export default class OrderCreate extends Component {
                                         <td scope="row">{order.printer.name}</td>
                                         <td>{order.printer.catridge}</td>
                                         <td>{order.quantity}</td>
-                                        <td>{order.price * order.quantity}</td>
+                                        <td>{helpers.formatNumber(order.price * order.quantity)}</td>
                                         <td>{new Date(order.created_at).toLocaleDateString()}</td>
                                     </tr>
                                     )}
@@ -319,26 +319,16 @@ export default class OrderCreate extends Component {
                     </div>
                 </div>
 
-                <div className={!copiedFromLastMonth ? 'col-12' : 'd-none' }>
-                <div
-                        className="alert alert-secondary"
-                        role="alert"
-                    >
-                        <strong>
-                        Ako želite da ponovite prošlu nabavku, kliknite
-                        <a href="" onClick={this.repeatOrderFromPreviousMonth}>
-                        {" "} ovde.
-                        </a>
-                        </strong>
-                    </div>
-
-                </div>
-
                 <ToastContainer />
                 <div className="col-6">
                     <div className="card">
                         <div className="card-header">
                             Dodaj novi toner u porudžbenicu
+                            <span class={!copiedFromLastMonth ? 'float-right' : 'd-none' }>
+                                <a class="btn btn-primary" href="" onClick={this.repeatOrderFromPreviousMonth}>
+                                <i class="fa fa-copy"></i> Kopiraj iz prošlog meseca
+                                </a>
+                            </span>
                         </div>
                         <div className="card-body">
                             <form
@@ -459,7 +449,7 @@ export default class OrderCreate extends Component {
                                         disabled={(summary - orders_sum) - amount < 0}
                                         className='btn btn-primary'
                                     >
-                                        Snimi porudžbenicu
+                                        <i class='fa fa-save'></i> Snimi porudžbenicu
                                     </button>
                                 </div>
                             </form>

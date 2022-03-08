@@ -23,7 +23,8 @@ class Users extends Component {
             showHide: !this.state.showHide,
             bonus: b,
             account,
-            account_id: account.id
+            account_id: account.id,
+            errors_message: '',
         });
     };
 

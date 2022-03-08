@@ -32,7 +32,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('automatic:orders')->daily();
+        $schedule->command('automatic:orders')->dailyAt('08:00');
         $schedule->command('send:order')->monthlyOn(28, '09:00'); // send pdf with current month order of toners for each user
         $schedule->command('remind:user')->monthlyOn(25, '10:00'); // remind user if he hasn't order anything
         $schedule->command('send:all-orders')->monthlyOn('28', '07:00'); //send all orders to admin

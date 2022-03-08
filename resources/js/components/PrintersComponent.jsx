@@ -345,15 +345,15 @@ export default class Printers extends Component {
                                                 )}
                                             </td>
                                             <td>
-                                                {moment(
+                                                {helpers.formatDateTime(
                                                     printer.created_at
-                                                ).format("DD/MM/YYYY")}
+                                                )}
                                             </td>
 
                                             <td>
-                                                {moment(
+                                                {helpers.formatDateTime(
                                                     printer.updated_at
-                                                ).format("DD/MM/YYYY HH:mm:ss")}
+                                                )}
                                             </td>
 
                                             <td>

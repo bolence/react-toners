@@ -31,7 +31,7 @@ class ApiOrdersController extends Controller
         $orders = Order::with('account', 'printer')
             ->when($month, function ($q) use ($user, $month) {
                 $q->where('account_id', '=', $user->account_id)
-                    ->whereRaw('MONTH(created_at) = ' . $month);
+                    ->whereMonth('created_at', '=', $month);
             })->orderBy('id', 'desc')
             ->get();
 
@@ -49,6 +49,12 @@ class ApiOrdersController extends Controller
         ], 200);
     }
 
+    /**
+     * Craete new order
+     *
+     * @param CreateNewOrder $request
+     * @return void
+     */
     public function store(CreateNewOrder $request)
     {
         $user = Auth::user();
@@ -103,14 +109,20 @@ class ApiOrdersController extends Controller
         return true;
     }
 
-    protected function check_if_exist($account_id, $printer_id)
+    /**
+     * Check if order with same printer exist
+     *
+     * @param integer $account_id
+     * @param integer $printer_id
+     * @return Illuminate\Response
+     */
+    private function check_if_exist(int $account_id, int $printer_id)
     {
 
         $order = Order::where('account_id', '=', $account_id)
             ->where('printer_id', '=', $printer_id)
             ->where('month', '=', date('m'))
-            ->whereYear('created_at', '=', date('Y'))
-            ->first();
+            ->exists();
 
         if ($order) {
             return response()->json([
@@ -120,7 +132,7 @@ class ApiOrdersController extends Controller
     }
 
     /**
-     * Undocumented function
+     * Delete order
      *
      * @param integer $id
      * @return void
@@ -128,11 +140,11 @@ class ApiOrdersController extends Controller
     public function destroy($id)
     {
 
-        $order = Order::find($id);
+        $order = Order::findOrFail($id);
 
-        if (!$order && !Auth::user()->isAdmin()) {
+        if (!$order && $order->user_id !== Auth::id()) {
             return response()->json([
-                'message' => 'Ova porudžbenica ne postoji u bazi podataka!',
+                'message' => 'Ova porudžbenica ne postoji ili nije vaša',
             ], 400);
         }
 
@@ -141,7 +153,7 @@ class ApiOrdersController extends Controller
             $order->delete();
         } catch (Exception $e) {
 
-            Log::error($e->getMessage());
+            Log::error($e->getMessage() . ' ' . $e->getLine() . ' ' . $e->getCode());
 
             return response()->json([
                 'message' => 'Nismo uspeli da izbrišemo ovu porudžbenicu',
@@ -149,10 +161,10 @@ class ApiOrdersController extends Controller
             ], 400);
         }
 
-        Log::info('Order has been deleted');
+        info('Order has been deleted');
 
         return response()->json([
-            'message' => 'Uspešno ste izbrisali porudžbenicu',
+            'message' => 'Uspešno ste izbrisali porudžbenicu.',
             'summary' => $this->get_summary_info($order->month),
         ], 200);
     }
@@ -168,21 +180,21 @@ class ApiOrdersController extends Controller
         ];
     }
 
-    public function statistics()
-    {
+    // public function statistics()
+    // {
 
-        $statistics = DB::select("
-            SELECT o.id, a.sektor, a.sluzba, sum(quantity * price) as orders_sum, count(a.id) as orders_count, o.`month`, year(o.created_at) as year
-            FROM orders o
-            JOIN accounts a
-            ON a.id = o.account_id
-            GROUP BY o.`month`, year(o.created_at), a.id
-            ORDER BY year(o.created_at) desc, o.month desc"
-        );
+    //     $statistics = DB::select("
+    //         SELECT o.id, a.sektor, a.sluzba, sum(quantity * price) as orders_sum, count(a.id) as orders_count, o.`month`, year(o.created_at) as year
+    //         FROM orders o
+    //         JOIN accounts a
+    //         ON a.id = o.account_id
+    //         GROUP BY o.`month`, year(o.created_at), a.id
+    //         ORDER BY year(o.created_at) desc, o.month desc"
+    //     );
 
-        return response()->json($statistics);
+    //     return response()->json($statistics);
 
-    }
+    // }
 
     public function copy_order_from_last_month()
     {
