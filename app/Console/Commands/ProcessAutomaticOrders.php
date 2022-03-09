@@ -2,15 +2,19 @@
 
 namespace App\Console\Commands;
 
+use App\Models\CopiedOrder;
 use App\Models\Order;
 use App\Models\ReminderDate;
 use App\Models\User;
 use App\Notifications\InfoAboutAutomaticOrderFinished;
+use App\Traits\Financial;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class ProcessAutomaticOrders extends Command
 {
+
+    use Financial;
     /**
      * The name and signature of the console command.
      *
@@ -44,21 +48,19 @@ class ProcessAutomaticOrders extends Command
     {
 
         $today = Carbon::today()->format('Y-m-d');
+        $previuos_month = Carbon::now()->subMonth();
 
         $users_reminders = ReminderDate::with('user')
             ->whereDone(0)
             ->whereDate('reminder_date', '=', $today)
             ->where('automatic_copy', '=', 1)
-            ->where('done', '=', 0)
             ->get();
 
-        if (!$users_reminders) {
-            return;
-        }
+        if ( ! $users_reminders ) return;
 
         foreach ($users_reminders as $reminder)
         {
-            $last_month_orders = Order::whereMonth('created_at', '=', date('m') - 1)
+            $last_month_orders = Order::whereMonth('created_at', '=', $previuos_month )
                 ->where('account_id', '=', $reminder->user->account_id)
                 ->get();
 
@@ -86,6 +88,14 @@ class ProcessAutomaticOrders extends Command
 
             $this->info('Copied finished');
             $this->info('User reminders count: ' . $users_reminders->count());
+
+            CopiedOrder::create([
+                'account_id' => $reminder->user->account_id,
+                'order_month' => $previuos_month,
+                'order_year'  => Carbon::now()->year(),
+                'order_sum'   => $this->get_orders_sum(),
+                'order_count' => $this->count_orders_per_month()
+            ]);
 
             $reminder->done = 1;
             $reminder->save();

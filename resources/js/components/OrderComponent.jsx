@@ -28,7 +28,6 @@ export default class Order extends Component {
         user: helpers.getUser(),
         orders_sum: 0,
         filteredData: [],
-        user: helpers.getUser(),
         showReminderCalendar: false,
         reminderDate: null,
         reminder_date_message: "",
@@ -39,6 +38,8 @@ export default class Order extends Component {
         count_toners: 0,
         copied: false,
         has_previous_month_orders: false,
+        automatic_copy_set: false,
+
     };
 
     componentDidMount() {
@@ -53,7 +54,8 @@ export default class Order extends Component {
                     count_toners: response.data.count_toners,
                     showLoader: false,
                     copied: response.data.copied,
-                    has_previous_month_orders: response.data.previous_month_orders
+                    has_previous_month_orders: response.data.previous_month_orders,
+                    automatic_copy_set: response.data.automatic_copy
                 });
             })
             .catch(error => {
@@ -161,18 +163,11 @@ export default class Order extends Component {
 
     }
 
-    handleChangeCheckbox = () => {
-        this.setState({
-            automaticCopy: !this.state.automaticCopy,
-            show_info: !this.state.show_info
-        });
-    }
-
     saveOrderReminder = () => {
 
         let data = {
             reminder_date: moment(this.state.reminderDate).subtract(1, 'month').format('YYYY-MM-DD'),
-            automatic_copy: this.state.automaticCopy
+            user: this.state.user
         }
 
         if(data.reminder_date == 'Invalid date') {
@@ -187,8 +182,7 @@ export default class Order extends Component {
             });
         }).catch( error => {
             this.setState({
-                showReminderCalendar: false,
-                error: error.response.data.errors[0]
+                showReminderCalendar: false
             });
 
             helpers.notify( error.response.data.message, true);
@@ -217,7 +211,8 @@ export default class Order extends Component {
             showLoader,
             count_toners,
             copied,
-            has_previous_month_orders
+            has_previous_month_orders,
+            automatic_copy_set
         } = this.state;
 
         const { length: count } =
@@ -267,14 +262,13 @@ export default class Order extends Component {
                         value={reminderDate}
                         width={1000}
                         shouldHighlightWeekends
-
                         />
                         </span>
                         <br/>
                         <span className={error ? 'text-danger' : ''}>
                             {error}
                         </span>
-                    <div class={!has_previous_month_orders ? 'alert alert-danger' : 'd-none'} role="alert">
+                    <div className={!has_previous_month_orders ? 'alert alert-danger' : 'd-none'} role="alert">
                         <strong>Nemate poručene tonere iz prošlog meseca</strong>
                     </div>
                     </Modal.Body>
@@ -310,7 +304,7 @@ export default class Order extends Component {
                                 {title} - {count_toners} toner/a
                                 <span className={orders_sum == 0 ? 'd-none' : '' }> - vrednost {helpers.formatNumber(orders_sum) + ' RSD.'}</span>
                             </b>
-                            <span className={!copied && orders.length == 0  ? 'float-right' : 'd-none' }>
+                            <span className={!copied && orders.length == 0 && !automatic_copy_set  ? 'float-right' : 'd-none' }>
                                 <button className="btn btn-primary" onClick={this.handleOpenCloseModal}>
                                     <i className="fa fa-calendar"></i> Automatsko kopiranje
                                 </button>

@@ -1,20 +1,25 @@
 <?php namespace App\Http\Controllers\Api;
 
 use Exception;
+use App\Models\User;
 use App\Models\ReminderDate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use App\Notifications\AutomaticOrderCopyNotification;
 
 class ApiReminderDateController extends Controller {
 
-
+    /**
+     * Save reminder
+     *
+     * @param Request $request
+     * @return Illuminate\Response
+     */
     public function store(Request $request)
     {
 
-        $user = Auth::user();
+        $user = (object) $request->user;
 
         if(
             ReminderDate::where('account_id', '=', $user->account_id)
@@ -32,7 +37,7 @@ class ApiReminderDateController extends Controller {
         $reminder->account_id = $user->account_id;
         $reminder->user_id = $user->id;
         $reminder->reminder_date = $request->reminder_date;
-        $reminder->automatic_copy = (bool) $request->automatic_copy;
+        $reminder->automatic_copy = 1;
 
         try
         {
@@ -42,17 +47,16 @@ class ApiReminderDateController extends Controller {
         {
             Log::error(' Error occured on line ' . $e->getLine() . ' in file ' . $e->getFile() . ' with message ' . $e->getMessage());
             return response()->json([
-                'message' => 'Došlo je do greške prilikom snimanja podsetnika',
+                'message' => 'Došlo je do greške prilikom snimanja podsetnika.',
                 'error_console_message' => $e->getMessage()
             ], 400);
         }
 
-        Log::info(' Reminder saved by' .$user->name);
+        info('Reminder saved by ' . $user->name);
 
-        if( (bool) $reminder->automatic_copy )
-        {
-            $user->notify( new AutomaticOrderCopyNotification($reminder) );
-        }
+        $user = User::findOrFail($user->id);
+
+        $user->notify( new AutomaticOrderCopyNotification($reminder) );
 
         return response()->json([
             'message' => 'Uspešno snimljen podsetnik za porudžbenicu.Dobićete obaveštenje na email ' . $user->email,

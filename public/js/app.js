@@ -4232,8 +4232,6 @@ var Order = /*#__PURE__*/function (_Component) {
   var _super = _createSuper(Order);
 
   function Order() {
-    var _defineProperty2;
-
     var _this;
 
     _classCallCheck(this, Order);
@@ -4244,7 +4242,7 @@ var Order = /*#__PURE__*/function (_Component) {
 
     _this = _super.call.apply(_super, [this].concat(args));
 
-    _defineProperty(_assertThisInitialized(_this), "state", (_defineProperty2 = {
+    _defineProperty(_assertThisInitialized(_this), "state", {
       orders: [],
       orders_count: 0,
       title: "",
@@ -4255,8 +4253,19 @@ var Order = /*#__PURE__*/function (_Component) {
       perPage: [10, 20, 50, 100, 500, 1000, 5000],
       user: _commons_Helpers__WEBPACK_IMPORTED_MODULE_7__["default"].getUser(),
       orders_sum: 0,
-      filteredData: []
-    }, _defineProperty(_defineProperty2, "user", _commons_Helpers__WEBPACK_IMPORTED_MODULE_7__["default"].getUser()), _defineProperty(_defineProperty2, "showReminderCalendar", false), _defineProperty(_defineProperty2, "reminderDate", null), _defineProperty(_defineProperty2, "reminder_date_message", ""), _defineProperty(_defineProperty2, "automaticCopy", false), _defineProperty(_defineProperty2, "dateGreaterThan", false), _defineProperty(_defineProperty2, "show_info", false), _defineProperty(_defineProperty2, "showLoader", true), _defineProperty(_defineProperty2, "count_toners", 0), _defineProperty(_defineProperty2, "copied", false), _defineProperty(_defineProperty2, "has_previous_month_orders", false), _defineProperty2));
+      filteredData: [],
+      showReminderCalendar: false,
+      reminderDate: null,
+      reminder_date_message: "",
+      automaticCopy: false,
+      dateGreaterThan: false,
+      show_info: false,
+      showLoader: true,
+      count_toners: 0,
+      copied: false,
+      has_previous_month_orders: false,
+      automatic_copy_set: false
+    });
 
     _defineProperty(_assertThisInitialized(_this), "onChange", function () {
       _this.setState(_defineProperty({}, e.target.name, e.target.value));
@@ -4358,17 +4367,10 @@ var Order = /*#__PURE__*/function (_Component) {
       });
     });
 
-    _defineProperty(_assertThisInitialized(_this), "handleChangeCheckbox", function () {
-      _this.setState({
-        automaticCopy: !_this.state.automaticCopy,
-        show_info: !_this.state.show_info
-      });
-    });
-
     _defineProperty(_assertThisInitialized(_this), "saveOrderReminder", function () {
       var data = {
         reminder_date: moment__WEBPACK_IMPORTED_MODULE_8___default()(_this.state.reminderDate).subtract(1, 'month').format('YYYY-MM-DD'),
-        automatic_copy: _this.state.automaticCopy
+        user: _this.state.user
       };
 
       if (data.reminder_date == 'Invalid date') {
@@ -4383,8 +4385,7 @@ var Order = /*#__PURE__*/function (_Component) {
         });
       })["catch"](function (error) {
         _this.setState({
-          showReminderCalendar: false,
-          error: error.response.data.errors[0]
+          showReminderCalendar: false
         });
 
         _commons_Helpers__WEBPACK_IMPORTED_MODULE_7__["default"].notify(error.response.data.message, true);
@@ -4408,7 +4409,8 @@ var Order = /*#__PURE__*/function (_Component) {
           count_toners: response.data.count_toners,
           showLoader: false,
           copied: response.data.copied,
-          has_previous_month_orders: response.data.previous_month_orders
+          has_previous_month_orders: response.data.previous_month_orders,
+          automatic_copy_set: response.data.automatic_copy
         });
       })["catch"](function (error) {
         _this2.setState({
@@ -4442,7 +4444,8 @@ var Order = /*#__PURE__*/function (_Component) {
           showLoader = _this$state.showLoader,
           count_toners = _this$state.count_toners,
           copied = _this$state.copied,
-          has_previous_month_orders = _this$state.has_previous_month_orders;
+          has_previous_month_orders = _this$state.has_previous_month_orders,
+          automatic_copy_set = _this$state.automatic_copy_set;
 
       var _ref = this.state.filteredData.length > 0 ? filteredData : this.state.orders,
           count = _ref.length;
@@ -4494,7 +4497,7 @@ var Order = /*#__PURE__*/function (_Component) {
       })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("span", {
         className: error ? 'text-danger' : ''
       }, error), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
-        "class": !has_previous_month_orders ? 'alert alert-danger' : 'd-none',
+        className: !has_previous_month_orders ? 'alert alert-danger' : 'd-none',
         role: "alert"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("strong", null, "Nemate poru\u010Dene tonere iz pro\u0161log meseca"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_14__["default"].Footer, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_15__["default"], {
         variant: "secondary",
@@ -4526,7 +4529,7 @@ var Order = /*#__PURE__*/function (_Component) {
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("b", null, title, " - ", count_toners, " toner/a", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("span", {
         className: orders_sum == 0 ? 'd-none' : ''
       }, " - vrednost ", _commons_Helpers__WEBPACK_IMPORTED_MODULE_7__["default"].formatNumber(orders_sum) + ' RSD.')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("span", {
-        className: !copied && orders.length == 0 ? 'float-right' : 'd-none'
+        className: !copied && orders.length == 0 && !automatic_copy_set ? 'float-right' : 'd-none'
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", {
         className: "btn btn-primary",
         onClick: this.handleOpenCloseModal
@@ -4757,7 +4760,8 @@ var OrderCreate = /*#__PURE__*/function (_Component) {
       previousMonthOrders: {},
       showPreviousMonthOrder: false,
       lastMonthOrders: {},
-      copiedFromLastMonth: false
+      copiedFromLastMonth: false,
+      automatic_copy_set: false
     });
 
     _defineProperty(_assertThisInitialized(_this), "handleSubmit", /*#__PURE__*/function () {
@@ -4890,7 +4894,8 @@ var OrderCreate = /*#__PURE__*/function (_Component) {
                   limit: response.data.summary.limit,
                   orders_sum: response.data.summary.orders_sum,
                   summary: response.data.summary.summary,
-                  copiedFromLastMonth: response.data.copied
+                  copiedFromLastMonth: response.data.copied,
+                  automatic_copy_set: response.data.automatic_copy
                 });
               })["catch"](function (error) {
                 _commons_Helpers__WEBPACK_IMPORTED_MODULE_4__["default"].notify(error.response.data.message, true);
@@ -5031,7 +5036,8 @@ var OrderCreate = /*#__PURE__*/function (_Component) {
           lastMonthOrders = _this$state2.lastMonthOrders,
           last_month_orders_sum = _this$state2.last_month_orders_sum,
           last_month_summary = _this$state2.last_month_summary,
-          copiedFromLastMonth = _this$state2.copiedFromLastMonth;
+          copiedFromLastMonth = _this$state2.copiedFromLastMonth,
+          automatic_copy_set = _this$state2.automatic_copy_set;
       var notEnoughMoney = last_month_orders_sum + orders_sum;
       var cantOrder = notEnoughMoney > limit;
       return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2__.createElement("div", {
@@ -5106,13 +5112,13 @@ var OrderCreate = /*#__PURE__*/function (_Component) {
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2__.createElement("div", {
         className: "card-header"
       }, "Dodaj novi toner u porud\u017Ebenicu", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2__.createElement("span", {
-        "class": !copiedFromLastMonth ? 'float-right' : 'd-none'
+        className: !copiedFromLastMonth && orders.length == 0 && !automatic_copy_set ? 'float-right' : 'd-none'
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2__.createElement("a", {
-        "class": "btn btn-primary",
+        className: "btn btn-primary",
         href: "",
         onClick: this.repeatOrderFromPreviousMonth
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2__.createElement("i", {
-        "class": "fa fa-copy"
+        className: "fa fa-copy"
       }), " Kopiraj iz pro\u0161log meseca"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2__.createElement("div", {
         className: "card-body"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2__.createElement("form", {
@@ -5207,7 +5213,7 @@ var OrderCreate = /*#__PURE__*/function (_Component) {
         disabled: summary - orders_sum - amount < 0,
         className: "btn btn-primary"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2__.createElement("i", {
-        "class": "fa fa-save"
+        className: "fa fa-save"
       }), " Snimi porud\u017Ebenicu")))))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2__.createElement("div", {
         className: "col-6"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2__.createElement("div", {
