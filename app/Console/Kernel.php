@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Console\Commands\DailyServiceCommand;
 use App\Console\Commands\ReminderForOrder;
 use Illuminate\Console\Scheduling\Schedule;
 use App\Console\Commands\ProcessAutomaticOrders;
@@ -21,6 +22,7 @@ class Kernel extends ConsoleKernel
         SendOrderPdfForCurrentMonth::class,
         ReminderForOrder::class,
         SendAllOrdersForCurrentMonthToAdmin::class,
+        DailyServiceCommand::class,
 
     ];
 
@@ -36,6 +38,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('send:order')->monthlyOn(28, '09:00'); // send pdf with current month order of toners for each user
         $schedule->command('remind:user')->monthlyOn(25, '10:00'); // remind user if he hasn't order anything
         $schedule->command('send:all-orders')->monthlyOn('28', '07:00'); //send all orders to admin
+        $schedule->command('daily:maintainance')->dailyAt(('00:00'));
     }
 
     /**

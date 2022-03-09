@@ -51,7 +51,7 @@ class PdfOrder extends Notification implements ShouldQueue
 
         return (new MailMessage)
                     ->greeting('Dobar dan, ' . $this->user->name)
-                    ->subject('Vaša porudžbenica za ' . date('m') . ' mesec')
+                    ->subject('Vaša porudžbenica za ' . (int) date('m') . '. mesec')
                     ->line('U ovom mejlu nalazi vam se vaša porudžbenica tonera za trenutni mesec.')
                     ->line('Hvala vam što koristite aplikaciju.')
                     ->attach($file_to_attach, [
