@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\CreateNewOrder;
-use App\Models\Account;
-use App\Models\CopiedOrder;
+use Exception;
+use Carbon\Carbon;
 use App\Models\Order;
+use App\Models\Account;
 use App\Models\Printer;
 use App\Traits\Financial;
-use Carbon\Carbon;
-use Exception;
+use App\Models\CopiedOrder;
+use App\Models\ReminderDate;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\CreateNewOrder;
 
 class ApiOrdersController extends Controller
 {
@@ -37,6 +37,7 @@ class ApiOrdersController extends Controller
 
         $copied = CopiedOrder::where('account_id', '=', $user->account_id)->whereMonth('created_at', '=', date('m'))->exists();
         $has_previous_month_orders = Order::previous_month_order($user->account_id, $month);
+        $automatic_copy = ReminderDate::where('account_id', '=', $user->account_id)->whereMonth('created_at', '=', date('m'))->exists();
 
         return response()->json([
             'orders' => $orders,
@@ -46,6 +47,7 @@ class ApiOrdersController extends Controller
             'summary' => $this->get_summary_info($month),
             'copied' => $copied,
             'previous_month_orders' => $has_previous_month_orders,
+            'automatic_copy' => $automatic_copy
         ], 200);
     }
 

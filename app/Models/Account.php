@@ -37,7 +37,7 @@ class Account extends Model
 
     public function sum_orders_per_month($month = null)
     {
-        $month = $month ? $month : date('Y');
+        $month = $month ? $month : date('m');
         return $this->orders()
             ->where('month', '=', $month)
             ->sum(DB::raw('price * quantity'));
@@ -45,7 +45,7 @@ class Account extends Model
 
     public function count_orders_per_month($month = null)
     {
-        $month = $month ? $month : date('Y');
+        $month = $month ? $month : date('m');
         return $this->orders()
             ->where('month', '=', $month)
             ->count();

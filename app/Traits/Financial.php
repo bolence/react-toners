@@ -17,9 +17,9 @@ trait Financial
         return $has_bonus ? (int) Auth::user()->account->bonus[0]->bonus : 0;
     }
 
-    public function get_orders_count()
+    public function get_orders_count($month = null)
     {
-        return Auth::user()->account->count_orders_per_month();
+        return Auth::user()->account->count_orders_per_month($month);
     }
 
     public function get_orders_sum($month = null)

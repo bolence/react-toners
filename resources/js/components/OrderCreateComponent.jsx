@@ -27,7 +27,8 @@ export default class OrderCreate extends Component {
         previousMonthOrders: {},
         showPreviousMonthOrder: false,
         lastMonthOrders: {},
-        copiedFromLastMonth: false
+        copiedFromLastMonth: false,
+        automatic_copy_set: false,
     };
 
 
@@ -130,7 +131,8 @@ export default class OrderCreate extends Component {
                     limit: response.data.summary.limit,
                     orders_sum: response.data.summary.orders_sum,
                     summary: response.data.summary.summary,
-                    copiedFromLastMonth: response.data.copied
+                    copiedFromLastMonth: response.data.copied,
+                    automatic_copy_set: response.data.automatic_copy
                 });
             })
             .catch(error => {
@@ -221,7 +223,8 @@ export default class OrderCreate extends Component {
             lastMonthOrders,
             last_month_orders_sum,
             last_month_summary,
-            copiedFromLastMonth
+            copiedFromLastMonth,
+            automatic_copy_set
         } = this.state;
 
         const notEnoughMoney = last_month_orders_sum + orders_sum;
@@ -324,9 +327,9 @@ export default class OrderCreate extends Component {
                     <div className="card">
                         <div className="card-header">
                             Dodaj novi toner u porudžbenicu
-                            <span class={!copiedFromLastMonth ? 'float-right' : 'd-none' }>
-                                <a class="btn btn-primary" href="" onClick={this.repeatOrderFromPreviousMonth}>
-                                <i class="fa fa-copy"></i> Kopiraj iz prošlog meseca
+                            <span className={!copiedFromLastMonth && orders.length == 0 && !automatic_copy_set ? 'float-right' : 'd-none' }>
+                                <a className="btn btn-primary" href="" onClick={this.repeatOrderFromPreviousMonth}>
+                                <i className="fa fa-copy"></i> Kopiraj iz prošlog meseca
                                 </a>
                             </span>
                         </div>
@@ -449,7 +452,7 @@ export default class OrderCreate extends Component {
                                         disabled={(summary - orders_sum) - amount < 0}
                                         className='btn btn-primary'
                                     >
-                                        <i class='fa fa-save'></i> Snimi porudžbenicu
+                                        <i className='fa fa-save'></i> Snimi porudžbenicu
                                     </button>
                                 </div>
                             </form>
